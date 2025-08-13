@@ -1,5 +1,5 @@
 **Tobias Weber**
-  - mails: tweber@ill.fr (work), tobias.weber@tum.de (old univ.)
+  - mail: tweber@ill.fr
   - orcid: 0000-0002-7230-1932
   - active: 2013 - now
   - principal author
