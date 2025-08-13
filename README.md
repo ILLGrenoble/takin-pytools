@@ -1,2 +1,2 @@
 # takin-pytools
-Python helper tools for Takin
+Python helper tools for [Takin](https://github.com/illgrenoble/takin).
