@@ -15,7 +15,7 @@ CONTRIBUTORS
   - mail: mecoli\<AT\>ill.fr
   - active: 2025
   - contributions:
-    - Python implementation of the Violini resolution method.
+    - Python implementation of an extended Violini resolution method.
 
 
 **Gabriel Rebolini**
