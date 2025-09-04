@@ -30,6 +30,7 @@
 #
 
 # To execute the test : pytest helper-tools/res_py/tests/vio_cov_test.py
+# Need to be updated
 
 import sys
 import os
