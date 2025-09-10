@@ -9,5 +9,8 @@ Python helper tools for [Takin](https://github.com/illgrenoble/takin).
 ## Tools
  - *resolution/calc_reso.py* is a TAS and TOF resolution calculator.
  - *resolution/calc_cov.py* calculates the resolution from Monte Carlo events.
- - *calculation/tas.py* calculates TAS angles.
  - *conversion/nxsprint.py* converts Nexus TAS scan files into the old text format.
+
+## Libraries
+ - *calculation/tas.py* calculates TAS angles.
+ - *calculation/lswt.py* is a linear spin-wave library in under 110 lines of code.
