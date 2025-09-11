@@ -13,4 +13,4 @@ Python helper tools for [Takin](https://github.com/illgrenoble/takin) and [Magpi
 
 ## Libraries
  - [calculation/tas.py](https://github.com/ILLGrenoble/takin-pytools/blob/main/calculation/tas.py) calculates TAS angles.
- - [calculation/lswt.py](https://github.com/ILLGrenoble/takin-pytools/blob/main/calculation/lswt.py) is a linear spin-wave library in under 110 lines of code.
+ - [calculation/lswt.py](https://github.com/ILLGrenoble/takin-pytools/blob/main/calculation/lswt.py) is a linear spin-wave library in just ~100 lines of code.
