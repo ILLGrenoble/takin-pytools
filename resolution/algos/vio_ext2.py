@@ -132,13 +132,14 @@ IN5 = {
 
 
 
-a1 = np.square( 0.761 ) #1.
-a2 = np.square( 2*np.sqrt(2*np.log(2)) ) #1
+a1 = np.square( np.divide(1, 3) ) #2.576
+a2 = np.divide(1, 12)
+a3 = np.square( 2*np.sqrt(2*np.log(2)) )
 
 #k_i = 2*np.pi/5.9
 #k_f = 2*np.pi/5.9
-k_i = 2*np.pi/2
-k_f = 2*np.pi/2
+k_i = 2*np.pi/6
+k_f = 2*np.pi/6
 v_i = vio_cov_ext.k2v(k_i)
 v_f = vio_cov_ext.k2v(k_f)
 #v_rot = 14400
@@ -148,26 +149,26 @@ v_rot = 12000
 Sr, Sh = 6e7, 60e7
 Eyh, Ezh, Lpe, Lme, Les = 7e7, 27e7, 9064.7e7, 1114.3e7, 170e7
 Dr, Hdet = 4000e7, 3000e7
-VarDr, VarDtheta = a1 * ( np.square(25.4e7) ), 1 * ( np.square(0.0065) )
+VarDr, VarDtheta = a1 * ( np.square(25.4e7) ), ( np.square(0.00635) )
 
 VarPx = a1 * ( np.square(v_i*np.divide(9, 2*6*v_rot) - 12e7) )
-VarPy = a2 * ( np.divide(np.square(Eyh), 3)
-            + np.square(Lpe)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
-            + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
-            + np.divide(2*np.square(Lpe), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
-VarPz = a2 * ( np.divide(np.square(Ezh), 3)
-            + np.divide(np.square(Lpe), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
-            + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
+VarPy = ( np.divide(np.square(Eyh), 3)
+        + np.square(Lpe)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
+        + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
+        + np.divide(2*np.square(Lpe), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
+VarPz = ( np.divide(np.square(Ezh), 3)
+        + np.divide(np.square(Lpe), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
+        + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
 VarMx = a1 * ( np.square(v_i*np.divide(3.25, 2*6*v_rot) - 6e7) )
-VarMy = a2 * ( np.divide(np.square(Eyh), 3)
-            + np.square(Lme)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
-            + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
-            + np.divide(2*np.square(Lme), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
-VarMz = a2 * ( np.divide(np.square(Ezh), 3)
-            + np.divide(np.square(Lme), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
-            + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
-VarSx, VarSy, VarSz = a2 * ( np.divide(np.square(Sr), 4) ), a2 * ( np.divide(np.square(Sr), 4) ), a2 * ( np.divide(np.square(Sh), 12) )
-VarDz = a1 * ( np.square(np.divide(Hdet, 100)) )
+VarMy = ( np.divide(np.square(Eyh), 3)
+        + np.square(Lme)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
+        + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
+        + np.divide(2*np.square(Lme), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
+VarMz = ( np.divide(np.square(Ezh), 3)
+        + np.divide(np.square(Lme), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
+        + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
+VarSx, VarSy, VarSz = np.divide(np.square(Sr), 4), np.divide(np.square(Sr), 4), np.divide(np.square(Sh), 12)
+VarDz = a2 * np.square(np.divide(Hdet, 100))
 Vartp, Vartm, Vartd = a1 * ( np.square(np.divide(9, 2*6*v_rot)) ), a1 * ( np.square(np.divide(3.25, 2*6*v_rot)) ), a1 * ( np.square(np.divide(25.4e7,v_f)) )
 Var = [VarPx, VarPy, VarPz, VarMx, VarMy, VarMz, VarSx, VarSy, VarSz, 1, 1, VarDz, Vartp, Vartm, Vartd]
 
@@ -175,13 +176,14 @@ covInstr = np.eye(15)
 for i in range(15):
     covInstr[i][i] = Var[i]
 
-sigPx = np.sqrt(np.divide(VarPx, a2))
-sigMx = np.sqrt(np.divide(VarMx, a2))
+sigPx = np.sqrt(VarPx)
+sigMx = np.sqrt(VarMx)
 LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vio_cov_ext.length(Sr, Sh, Lpe, Lme, Les, Eyh, Ezh, -9234.7e7, sigPx, -1284.3e7, sigMx)
+print(LPM, LMS)
 LSD, LSDz = Dr, 0
 
 #l_Q = [0.632, 0.734, 0.969, 1.158, 1.214, 1.265, 1.421, 1.463, 1.552, 1.597]
-l_Q = [1.943, 1.46, 0.957, 0.117]
+l_Q = [0.854]
 for Q in l_Q:
     print()
     print("Q = ", Q)
@@ -196,7 +198,7 @@ for Q in l_Q:
     dict_la = {"L_PM":LPM, "L_PMx":LPMx, "L_PMy":LPMy, "L_PMz":LPMz, "L_MS":LMS, "L_MSx":LMSx, "L_MSy":LMSy, "L_MSz":LMSz, "L_SD":LSD, "L_SDx":LSDx, "L_SDy":LSDy, "L_SDz":LSDz}
     shape = 'VCYL'
     covQhw = vio_cov_ext.cov(v_i, v_f, dict_la, covInstr, shape, False)
-    covQhwInv = la.inv(np.divide(covQhw, helpers.sig2fwhm))
+    covQhwInv = la.inv(covQhw)
     # Going from ki, kf, Qz to Qpara, Qperp, Qz :
     Q_ki = tas.get_psi(k_i, k_f, Q, 1)
     rot = helpers.rotation_matrix_nd(-Q_ki, 4)
