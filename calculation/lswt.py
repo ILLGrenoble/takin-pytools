@@ -6,8 +6,7 @@
 # @see https://github.com/ILLGrenoble/magpie for full implementation and references
 #
 
-import numpy as np
-import numpy.linalg as la
+import numpy as np, numpy.linalg as la
 
 
 # debug output
@@ -34,11 +33,9 @@ def init(sites, couplings, verbose = False):
 		s = 0.
 
 		if np.allclose(Sdir, zdir):
-			# spin and z axis parallel
-			c = 1.
+			c = 1.    # spin and z axis parallel
 		elif np.allclose(Sdir, -zdir):
-			# spin and z axis anti-parallel
-			c = -1.
+			c = -1.   # spin and z axis anti-parallel
 		else:
 			# sine and cosine of the angle between spin and z axis
 			rotaxis = np.cross(Sdir, zdir)
@@ -50,12 +47,10 @@ def init(sites, couplings, verbose = False):
 		rot = (1. - c) * np.outer(rotaxis, rotaxis) + np.diag([ c, c, c ]) - skew(rotaxis)*s
 		site["u"] = rot[0, :] + 1j * rot[1, :]
 		site["v"] = rot[2, :]
-		print_infos(np.dot(rot, Sdir))
 		print_infos("\nrot = \n%s\nu = %s\nv = %s" % (rot, site["u"], site["v"]))
 
 	for coupling in couplings:
-		J = coupling["J"]
-		coupling["J_real"] = np.diag([ J, J, J ]) + skew(coupling["DMI"])
+		coupling["J_real"] = np.diag([ coupling["J"] ]*3) + skew(coupling["DMI"])
 		print_infos("\nJ_real =\n%s" % coupling["J_real"])
 
 
@@ -68,8 +63,7 @@ def get_energies(Qvec, sites, couplings):
 	for coupling in couplings:
 		dist = np.array(coupling["dist"])
 		J_real = coupling["J_real"]
-		site1 = coupling["sites"][0]
-		site2 = coupling["sites"][1]
+		site1, site2 = coupling["sites"]
 
 		J_ft = J_real * np.exp(-1j * 2.*np.pi * np.dot(dist, Qvec))
 		J_fourier[site1, site2] += J_ft
