@@ -130,28 +130,31 @@ IN5 = {
 
 #LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vio_cov_ext.length(0.1, 0.1, 9064.7, 1114.3, 170, 7, 27, -9234.7, sigPx, -1284.3, sigMx)
 
-
-
-a1 = np.square( np.divide(1, 3) ) #2.576
-a2 = np.divide(1, 12)
-a3 = np.square( 2*np.sqrt(2*np.log(2)) )
-
-#k_i = 2*np.pi/5.9
-#k_f = 2*np.pi/5.9
-k_i = 2*np.pi/6
-k_f = 2*np.pi/6
+k_i = 2*np.pi/5.9
+k_f = 2*np.pi/5.9
+#k_i = 2*np.pi/6
+#k_f = 2*np.pi/6
+#k_i = 3
+#k_f = 3
 v_i = vio_cov_ext.k2v(k_i)
 v_f = vio_cov_ext.k2v(k_f)
-#v_rot = 14400
-v_rot = 12000
+v_rot = 2*14400
+#v_rot = 2*12000
 
-#Sr, Sh = 10e7, 50e7
-Sr, Sh = 6e7, 60e7
+
+Sr, Sh = 4e7, 50e7 #5e7, 50e7 #Mn-ac
+#Sr, Sh = 6e7, 60e7 #Vanadium
+thetaCP, thetaBP, wP = 9.0, 8.5, 12e7
+thetaCM, thetaBM, wM = 3.25, 3.0, 6e7
 Eyh, Ezh, Lpe, Lme, Les = 7e7, 27e7, 9064.7e7, 1114.3e7, 170e7
-Dr, Hdet = 4000e7, 3000e7
-VarDr, VarDtheta = a1 * ( np.square(25.4e7) ), ( np.square(0.00635) )
+Dr, Hdet, Wr = 4000e7, 3000e7, 26e7
+VarDr = np.divide( np.square(2*Sr) + np.square(Wr), 12 )
+VarDtheta = np.square(0.0065)/12#( (1 - np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Dr)))))*(2*np.divide(np.square(Dr), np.square(Sr)) - np.divide(np.square(Wr), 6*np.square(Sr)))
+             #+ np.divide(2, np.sqrt(1 - np.divide(np.square(Sr), np.square(Dr)))) -1 )
+print(np.sqrt(VarDtheta))
 
-VarPx = a1 * ( np.square(v_i*np.divide(9, 2*6*v_rot) - 12e7) )
+Vartp, Vartm, Vartd = np.divide( np.square(thetaCP) + np.square(thetaBP), 12*np.square(6*v_rot) ), np.divide( np.square(thetaCM) + np.square(thetaBM), 12*np.square(6*v_rot) ), np.divide( VarDr, np.square(v_f) )
+VarPx = np.square( v_i*np.sqrt(Vartp) - wP )
 VarPy = ( np.divide(np.square(Eyh), 3)
         + np.square(Lpe)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
         + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
@@ -159,7 +162,7 @@ VarPy = ( np.divide(np.square(Eyh), 3)
 VarPz = ( np.divide(np.square(Ezh), 3)
         + np.divide(np.square(Lpe), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
         + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
-VarMx = a1 * ( np.square(v_i*np.divide(3.25, 2*6*v_rot) - 6e7) )
+VarMx = np.square( v_i*np.sqrt(Vartm) - wM )
 VarMy = ( np.divide(np.square(Eyh), 3)
         + np.square(Lme)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
         + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
@@ -168,8 +171,7 @@ VarMz = ( np.divide(np.square(Ezh), 3)
         + np.divide(np.square(Lme), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
         + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
 VarSx, VarSy, VarSz = np.divide(np.square(Sr), 4), np.divide(np.square(Sr), 4), np.divide(np.square(Sh), 12)
-VarDz = a2 * np.square(np.divide(Hdet, 100))
-Vartp, Vartm, Vartd = a1 * ( np.square(np.divide(9, 2*6*v_rot)) ), a1 * ( np.square(np.divide(3.25, 2*6*v_rot)) ), a1 * ( np.square(np.divide(25.4e7,v_f)) )
+VarDz = np.divide(1, 12) * np.square(np.divide(Hdet, 100))
 Var = [VarPx, VarPy, VarPz, VarMx, VarMy, VarMz, VarSx, VarSy, VarSz, 1, 1, VarDz, Vartp, Vartm, Vartd]
 
 covInstr = np.eye(15)
@@ -178,12 +180,13 @@ for i in range(15):
 
 sigPx = np.sqrt(VarPx)
 sigMx = np.sqrt(VarMx)
-LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vio_cov_ext.length(Sr, Sh, Lpe, Lme, Les, Eyh, Ezh, -9234.7e7, sigPx, -1284.3e7, sigMx)
+LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vio_cov_ext.length(Sr, Sh, Lpe, Lme, Les, Eyh, Ezh, -(Lpe+Les), sigPx, -(Lme+Les), sigMx)
 print(LPM, LMS)
 LSD, LSDz = Dr, 0
 
-#l_Q = [0.632, 0.734, 0.969, 1.158, 1.214, 1.265, 1.421, 1.463, 1.552, 1.597]
-l_Q = [0.854]
+l_Q = [0.632, 0.734, 0.969, 1.158, 1.214, 1.265, 1.421, 1.463, 1.552, 1.597]
+#l_Q = [1.915, 1.502, 1.11, 0.74, 0.46, 0.117]
+#l_Q = [1]
 for Q in l_Q:
     print()
     print("Q = ", Q)
