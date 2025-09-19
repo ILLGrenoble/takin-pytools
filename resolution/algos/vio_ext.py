@@ -128,30 +128,30 @@ IN5 = {
     "delta_time_det":0
 }
 
-k_i = 2*np.pi/5.9
-k_f = 2*np.pi/5.9
-#k_i = 2*np.pi/2
-#k_f = 2*np.pi/2
-l_Q = [0.632, 0.734, 0.969, 1.158, 1.214, 1.265, 1.421, 1.463, 1.552, 1.597]
+#k_i = 2*np.pi/5.9
+#k_f = 2*np.pi/5.9
+k_i = 2*np.pi/2
+k_f = 2*np.pi/2
+l_Q = [1]#[0.632, 0.734, 0.969, 1.158, 1.214, 1.265, 1.421, 1.463, 1.552, 1.597]
 #Ei = tas.get_E(k_i,0)
 for Q in l_Q:
     print()
     print("Q = ", Q)
     theta_f = tas.get_scattering_angle(k_i, k_f, Q)
 
-    dict_la = {"L_PM":8371.3e7, "L_MS":1285.7e7, "rad":4000e7, "z":0, "theta_i":0, "phi_i":0, "theta_f":theta_f,"phi_f":0}
-    #dict_la = {"L_PM":8005.2e7, "L_MS":1229.5e7, "rad":4000e7, "z":0, "theta_i":0, "phi_i":0, "theta_f":theta_f,"phi_f":0}
+    #dict_la = {"L_PM":8371.3e7, "L_MS":1285.7e7, "rad":4000e7, "z":0, "theta_i":0, "phi_i":0, "theta_f":theta_f,"phi_f":0}
+    dict_la = {"L_PM":8005.2e7, "L_MS":1229.5e7, "rad":4000e7, "z":0, "theta_i":0, "phi_i":0, "theta_f":theta_f,"phi_f":0}
     v_i = vio_cov_ext.k2v(k_i)
     v_f = vio_cov_ext.k2v(k_f)
-    v_rot = 14400
+    v_rot = 12000 #14400
 
     a = 0.761 #1.
     #dlt = {"dlt_Prad":12e7, "dlt_Pz":0, "dlt_Mrad":6e7, "dlt_Mz":0, "dlt_Srad":0, "dlt_Sz":0, "dlt_Drad":26e7, "dlt_Dz":30e7, 
     #        "dlt_theta_i":0, "dlt_theta_f":0.0065, "dlt_tP":np.divide(9, 2*6*v_rot), "dlt_tM":np.divide(3.25, 2*6*v_rot), "dlt_tD":0}
-    #dlt = {"dlt_Prad":a*12e7, "dlt_Pz":a*0, "dlt_Mrad":a*6e7, "dlt_Mz":a*0, "dlt_Srad":a*0, "dlt_Sz":a*0, "dlt_Drad":a*26e7, "dlt_Dz":a*30e7, 
-    #        "dlt_theta_i":0, "dlt_theta_f":0.0065, "dlt_tP":np.divide(a*9, 2*6*v_rot), "dlt_tM":np.divide(a*3.25, 2*6*v_rot), "dlt_tD":0}
-    dlt = {"dlt_Prad":a*(v_i*np.divide(9, 2*6*v_rot)-12e7), "dlt_Pz":a*0, "dlt_Mrad":a*(v_i*np.divide(3.25, 2*6*v_rot)-6e7), "dlt_Mz":a*0, "dlt_Srad":a*0, "dlt_Sz":a*0, "dlt_Drad":a*26e7, "dlt_Dz":a*30e7, 
+    dlt = {"dlt_Prad":a*12e7, "dlt_Pz":a*0, "dlt_Mrad":a*6e7, "dlt_Mz":a*0, "dlt_Srad":a*0, "dlt_Sz":a*0, "dlt_Drad":a*26e7, "dlt_Dz":a*30e7, 
             "dlt_theta_i":0, "dlt_theta_f":0.0065, "dlt_tP":np.divide(a*9, 2*6*v_rot), "dlt_tM":np.divide(a*3.25, 2*6*v_rot), "dlt_tD":0}
+    #dlt = {"dlt_Prad":a*(v_i*np.divide(9, 2*6*v_rot)-12e7), "dlt_Pz":a*0, "dlt_Mrad":a*(v_i*np.divide(3.25, 2*6*v_rot)-6e7), "dlt_Mz":a*0, "dlt_Srad":a*0, "dlt_Sz":a*0, "dlt_Drad":a*26e7, "dlt_Dz":a*30e7, 
+    #        "dlt_theta_i":0, "dlt_theta_f":0.0065, "dlt_tP":np.divide(a*9, 2*6*v_rot), "dlt_tM":np.divide(a*3.25, 2*6*v_rot), "dlt_tD":0}
     #dlt = {"dlt_Prad":a*(v_i*np.divide(9, 2*6*v_rot)-12e7), "dlt_Pz":a*0, "dlt_Mrad":a*(v_i*np.divide(3.25, 2*6*v_rot)-6e7), "dlt_Mz":a*0, "dlt_Srad":a*0, "dlt_Sz":a*0, "dlt_Drad":a*26e7, "dlt_Dz":a*30e7, 
     #        "dlt_theta_i":0, "dlt_theta_f":6.5, "dlt_tP":np.divide(a*9, 2*6*v_rot), "dlt_tM":np.divide(a*3.25, 2*6*v_rot), "dlt_tD":0}
 
@@ -168,7 +168,7 @@ for Q in l_Q:
 
     import libs.reso as reso
 
-    ellipses = reso.calc_ellipses(covQhwInv, verbose = False)
+    ellipses = reso.calc_ellipses(covQhwInv, verbose = True)
     #reso.plot_ellipses(ellipses, verbose = True)
 
 #print(Ei)

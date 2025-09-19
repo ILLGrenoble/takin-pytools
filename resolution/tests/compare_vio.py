@@ -50,10 +50,149 @@ import algos.vio_cov_ext2 as vce2
 # Qup = Qz
 
 l_lambda = [1, 3, 5, 10, 12, 20]
+lbdi = 2
+lbdf = lbdi
+Q=1
+v_rot = 12000
+a = 1  # 2*np.sqrt(3)
 
-# vio.py
+k_i = 2*np.pi/lbdi
+k_f = 2*np.pi/lbdf
+v_i = vc.k2v(k_i)
+v_f = vc.k2v(k_f)
+theta_f = tas.get_scattering_angle(k_i, k_f, Q)
+Q_ki = tas.get_psi(k_i, k_f, Q, 1)
+rot = helpers.rotation_matrix_nd(-Q_ki, 4)
+det_shape = 'VCYL'
+
+
+print('---------------------------------------- vio.py ----------------------------------------')
+# ---------------------------------------- vio.py ----------------------------------------
 LP12, LP2M1, LM12, LM2S, Rd = 149.8e7, 7800.6e7, 54.8e7, 1229.5e7, 4000.e7
-dPM, dMS, dRd, dthetaf, dDz = np.sqrt(12**2 + 6**2)*1e7, 6e7, 26e7, 0.0065, 30e7
+aP, aM, v_rotmin, v_rotmax = 9., 3.25, 7000, 17000
+dRd, dthetaf, dDz = 26e7, 0.0065, 30e7
+# 1er modele:
+print('\n', 'PREMIER MODELE', '\n')
+delta_tp, delta_tm, delta_td = np.divide(aP, 2*6*v_rot), np.divide(aM, 2*6*v_rot), 0
+dPM, dMS= 0, 0
+d_geo = {"dist_PM":[LP12, 0., LP2M1, dPM, LM12, 0.], "dist_MS":[LM2S, dMS], "dist_SD":[Rd, dRd, 0, dDz], "angles":[0, 0, 0, 0, theta_f, dthetaf], "delta_time_detector":delta_td}
+d_choppers = {"chopperP":[np.deg2rad(aP), np.divide(v_rotmin*np.pi, 30), np.divide(v_rotmax*np.pi, 30), np.divide(v_rot*np.pi, 30), delta_tp],
+              "chopperM":[np.deg2rad(aM), np.divide(v_rotmin*np.pi, 30), np.divide(v_rotmax*np.pi, 30), np.divide(v_rot*np.pi, 30), delta_tm]}
+covQhwVio = vc.cov(d_geo, d_choppers, v_i, v_f, det_shape, False)
+covQhwInvVio = la.inv(np.divide(covQhwVio, helpers.sig2fwhm))
+covQhwInvVio = np.dot(rot.T, np.dot(covQhwInvVio, rot))
+
+import libs.reso as reso
+ellipses = reso.calc_ellipses(covQhwInvVio, verbose = True)
+reso.plot_ellipses(ellipses, verbose = True)
+
+# 2e modele:
+print('\n', 'DEUXIEME MODELE', '\n')
+a = 0.761
+delta_tp, delta_tm, delta_td = a*np.divide(aP, 2*6*v_rot), a*np.divide(aM, 2*6*v_rot), 0
+dPM, dMS= 0, 0
+d_geo = {"dist_PM":[LP12, 0., LP2M1, dPM, LM12, 0.], "dist_MS":[LM2S, dMS], "dist_SD":[Rd, dRd, 0, dDz], "angles":[0, 0, 0, 0, theta_f, dthetaf], "delta_time_detector":delta_td}
+d_choppers = {"chopperP":[np.deg2rad(aP), np.divide(v_rotmin*np.pi, 30), np.divide(v_rotmax*np.pi, 30), np.divide(v_rot*np.pi, 30), delta_tp],
+              "chopperM":[np.deg2rad(aM), np.divide(v_rotmin*np.pi, 30), np.divide(v_rotmax*np.pi, 30), np.divide(v_rot*np.pi, 30), delta_tm]}
+covQhwVio = vc.cov(d_geo, d_choppers, v_i, v_f, det_shape, False)
+covQhwInvVio = la.inv(np.divide(covQhwVio, helpers.sig2fwhm))
+covQhwInvVio = np.dot(rot.T, np.dot(covQhwInvVio, rot))
+
+import libs.reso as reso
+ellipses = reso.calc_ellipses(covQhwInvVio, verbose = True)
+reso.plot_ellipses(ellipses, verbose = True)
+
+# 3e modele
+print('\n', 'TROISIEME MODELE', '\n')
+a = 0.761
+delta_tp, delta_tm, delta_td = a*np.divide(aP, 2*6*v_rot), a*np.divide(aM, 2*6*v_rot), 0
+dPM, dMS= np.sqrt(12**2 + 6**2)*1e7, 6e7
+d_geo = {"dist_PM":[LP12, 0., LP2M1, dPM, LM12, 0.], "dist_MS":[LM2S, dMS], "dist_SD":[Rd, dRd, 0, dDz], "angles":[0, 0, 0, 0, theta_f, dthetaf], "delta_time_detector":delta_td}
+d_choppers = {"chopperP":[np.deg2rad(aP), np.divide(v_rotmin*np.pi, 30), np.divide(v_rotmax*np.pi, 30), np.divide(v_rot*np.pi, 30), delta_tp],
+              "chopperM":[np.deg2rad(aM), np.divide(v_rotmin*np.pi, 30), np.divide(v_rotmax*np.pi, 30), np.divide(v_rot*np.pi, 30), delta_tm]}
+covQhwVio = vc.cov(d_geo, d_choppers, v_i, v_f, det_shape, False)
+covQhwInvVio = la.inv(np.divide(covQhwVio, helpers.sig2fwhm))
+covQhwInvVio = np.dot(rot.T, np.dot(covQhwInvVio, rot))
+
+import libs.reso as reso
+ellipses = reso.calc_ellipses(covQhwInvVio, verbose = True)
+reso.plot_ellipses(ellipses, verbose = True)
+
+# 4e modele
+print('\n', 'QUATRIEME MODELE', '\n')
+a = 0.761
+delta_tp, delta_tm, delta_td = a*np.divide(aP, 2*6*v_rot), a*np.divide(aM, 2*6*v_rot), np.divide(dRd, v_f)
+dPM, dMS= np.sqrt( np.square(v_i*delta_tp - 12e7) + np.square(v_i*delta_tm - 6e7) ), v_i*delta_tm - 6e7
+d_geo = {"dist_PM":[LP12, 0., LP2M1, dPM, LM12, 0.], "dist_MS":[LM2S, dMS], "dist_SD":[Rd, dRd, 0, dDz], "angles":[0, 0, 0, 0, theta_f, dthetaf], "delta_time_detector":delta_td}
+d_choppers = {"chopperP":[np.deg2rad(aP), np.divide(v_rotmin*np.pi, 30), np.divide(v_rotmax*np.pi, 30), np.divide(v_rot*np.pi, 30), delta_tp],
+              "chopperM":[np.deg2rad(aM), np.divide(v_rotmin*np.pi, 30), np.divide(v_rotmax*np.pi, 30), np.divide(v_rot*np.pi, 30), delta_tm]}
+covQhwVio = vc.cov(d_geo, d_choppers, v_i, v_f, det_shape, False)
+covQhwInvVio = la.inv(np.divide(covQhwVio, helpers.sig2fwhm))
+covQhwInvVio = np.dot(rot.T, np.dot(covQhwInvVio, rot))
+
+import libs.reso as reso
+ellipses = reso.calc_ellipses(covQhwInvVio, verbose = True)
+reso.plot_ellipses(ellipses, verbose = True)
+
+# 5e modele
+print('\n', 'CINQUIEME MODELE', '\n')
+a= np.divide(1, 2*np.sqrt(3))
+delta_tp, delta_tm, delta_td = a*np.divide(aP, 2*6*v_rot), a*np.divide(aM, 2*6*v_rot), np.divide(dRd, v_f)
+dPM, dMS= np.sqrt( np.square(v_i*delta_tp - 12e7) + np.square(v_i*delta_tm - 6e7) ), v_i*delta_tm - 6e7
+d_geo = {"dist_PM":[LP12, 0., LP2M1, dPM, LM12, 0.], "dist_MS":[LM2S, dMS], "dist_SD":[Rd, dRd, 0, dDz], "angles":[0, 0, 0, 0, theta_f, dthetaf], "delta_time_detector":delta_td}
+d_choppers = {"chopperP":[np.deg2rad(aP), np.divide(v_rotmin*np.pi, 30), np.divide(v_rotmax*np.pi, 30), np.divide(v_rot*np.pi, 30), delta_tp],
+              "chopperM":[np.deg2rad(aM), np.divide(v_rotmin*np.pi, 30), np.divide(v_rotmax*np.pi, 30), np.divide(v_rot*np.pi, 30), delta_tm]}
+covQhwVio = vc.cov(d_geo, d_choppers, v_i, v_f, det_shape, False)
+covQhwInvVio = la.inv(covQhwVio)
+covQhwInvVio = np.dot(rot.T, np.dot(covQhwInvVio, rot))
+
+import libs.reso as reso
+ellipses = reso.calc_ellipses(covQhwInvVio, verbose = True)
+reso.plot_ellipses(ellipses, verbose = True)
+
+
+print('---------------------------------------- vio_ext.py ----------------------------------------')
+# ---------------------------------------- vio_ext.py ----------------------------------------
+LPM, LMS, rad, z, Hdet = 8005.2e7, 1229.5e7, 4000.e7, 0, 3000e7
+thetaCP, thetaCM, wP, wM = 9.0, 3.25, 12e7, 6e7
+dDrad, dthetaf = 26e7, 0.0065
+dtp, dtm, dtd = np.divide(thetaCP, a*(2*6*v_rot)), np.divide(thetaCM, a*(2*6*v_rot)), np.divide(dDrad, v_f)
+dPrad, dMrad, dDz = v_i*dtp - wP, v_i*dtm - wM, np.divide(Hdet, 100)
+
+d_la = {"L_PM":LPM, "L_MS":LMS, "rad":rad, "z":z, "theta_i":0, "phi_i":0, "theta_f":theta_f, "phi_f":0}
+d_delta = {"dlt_Prad":dPrad, "dlt_Pz":0, "dlt_Mrad":dMrad, "dlt_Mz":0, "dlt_Srad":0, "dlt_Sz":0, "dlt_Drad":dDrad, "dlt_Dz":dDz, "dlt_tP":dtp, "dlt_tM":dtm, "dlt_tD":dtd, "dlt_theta_i":0, "dlt_theta_f":dthetaf}
+print(d_delta)
+#print('\n', lbdi, lbdf, k_i, k_f, v_i, v_f, tas.get_E(k_i, 0))
+covQhwVioExt = vce.cov(v_i, v_f, d_la, d_delta, verbose=False)
+covQhwInvVioExt = la.inv(np.divide(covQhwVioExt, helpers.sig2fwhm))
+covQhwInvVioExt = np.dot(rot.T, np.dot(covQhwInvVioExt, rot))
+
+import libs.reso as reso
+ellipses = reso.calc_ellipses(covQhwInvVioExt, verbose = True)
+reso.plot_ellipses(ellipses, verbose = True)
+
+
+print('---------------------------------------- vio_ext2.py ----------------------------------------')
+# ---------------------------------------- vio_ext2.py ----------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 IN5 = {
     "det_shape":"VCYL",
     "L_chopP12":[LP12, 0.],            # [distance, delta]
@@ -65,57 +204,16 @@ IN5 = {
     "phi_i":[0, 0], # [0., 1.25e-2],                   # [angle, delta]
     "delta_theta_f":dthetaf,
     "delta_z":dDz, #0,
-    "prop_chopP":[np.deg2rad(9.), np.divide(7000.*np.pi, 30), np.divide(17000.*np.pi, 30)],    # [window angle, min rot speed, max rot speed]
-    "prop_chopM":[np.deg2rad(3.25), np.divide(7000.*np.pi, 30), np.divide(17000.*np.pi, 30)],    # [window angle, min rot speed, max rot speed]
+    "prop_chopP":[aP, np.divide(7000.*np.pi, 30), np.divide(17000.*np.pi, 30)],    # [window angle, min rot speed, max rot speed]
+    "prop_chopM":[aM, np.divide(7000.*np.pi, 30), np.divide(17000.*np.pi, 30)],    # [window angle, min rot speed, max rot speed]
     "delta_time_det":0
 }
+#d_choppers = {"chopperP":[np.deg2rad(9.), np.divide(7000.*np.pi, 30), np.divide(17000.*np.pi, 30), np.divide(8500.*np.pi, 30)], "chopperM":[np.deg2rad(3.25), np.divide(7000.*np.pi, 30), np.divide(17000.*np.pi, 30), np.divide(8500.*np.pi, 30)]}
+#d_la = {"L_PM":8005.2e7, "L_MS":1229.5e7, "rad":4000.e7, "z":0, "theta_i":0, "phi_i":0, "theta_f":0, "phi_f":0}
+#d_delta = {"dlt_Prad":0, "dlt_Pz":0, "dlt_Mrad":0, "dlt_Mz":0, "dlt_Srad":0, "dlt_Sz":0, "dlt_Drad":26e7, "dlt_Dz":30e7, "dlt_tP":8.82e-5, "dlt_tM":3.19e-5, "dlt_tD":0, "dlt_theta_i":0, "dlt_theta_f":6.5e-3}
+#det_shape = 'VCYL'
 
-d_choppers = {"chopperP":[np.deg2rad(9.), np.divide(7000.*np.pi, 30), np.divide(17000.*np.pi, 30), np.divide(8500.*np.pi, 30)], "chopperM":[np.deg2rad(3.25), np.divide(7000.*np.pi, 30), np.divide(17000.*np.pi, 30), np.divide(8500.*np.pi, 30)]}
-d_la = {"L_PM":8005.2e7, "L_MS":1229.5e7, "rad":4000.e7, "z":0, "theta_i":0, "phi_i":0, "theta_f":0, "phi_f":0}
-d_delta = {"dlt_Prad":0, "dlt_Pz":0, "dlt_Mrad":0, "dlt_Mz":0, "dlt_Srad":0, "dlt_Sz":0, "dlt_Drad":26e7, "dlt_Dz":30e7, "dlt_tP":8.82e-5, "dlt_tM":3.19e-5, "dlt_tD":0, "dlt_theta_i":0, "dlt_theta_f":6.5e-3}
-det_shape = 'VCYL'
-
-lbd = 2
-k_i = 2*np.pi/lbd
-k_f = 2*np.pi/lbd
-Q=1
-v_i = vc.k2v(k_i)
-v_f = vc.k2v(k_f)
-theta_f = tas.get_scattering_angle(k_i, k_f, Q)
-d_geo = {"dist_PM":[LP12, 0., LP2M1, dPM, LM12, 0.], "dist_MS":[LM2S, dMS], "dist_SD":[Rd, dRd, 0, dDz], "angles":[0, 0, 0, 0, theta_f, dthetaf], "delta_time_detector":0}
-d_la["theta_f"] = theta_f
-
-Q_ki = tas.get_psi(k_i, k_f, Q, 1)
-rot = helpers.rotation_matrix_nd(-Q_ki, 4)
-
-print('\n', lbd, k_i, k_f, v_i, v_f, tas.get_E(k_i, 0))
-print("!!!!!!!!!! VIO !!!!!!!!!!")
-covVio = vc.cov(d_geo, d_choppers, v_i, v_f, det_shape, False)
-covQhwVio = np.dot(rot.T, np.dot(covVio, rot))
-print(covQhwVio)
-lvio = [float(np.sqrt(covQhwVio[0][0])), float(np.sqrt(covQhwVio[1][1])), float(np.sqrt(covQhwVio[2][2])), float(np.sqrt(covQhwVio[3][3]))]
-
-
-
-
-# vio_ext.py
-
-
-
-
-
-
-
-
-# vio_ext2.py
-
-
-d_choppers = {"chopperP":[np.deg2rad(9.), np.divide(7000.*np.pi, 30), np.divide(17000.*np.pi, 30), np.divide(8500.*np.pi, 30)], "chopperM":[np.deg2rad(3.25), np.divide(7000.*np.pi, 30), np.divide(17000.*np.pi, 30), np.divide(8500.*np.pi, 30)]}
-d_la = {"L_PM":8005.2e7, "L_MS":1229.5e7, "rad":4000.e7, "z":0, "theta_i":0, "phi_i":0, "theta_f":0, "phi_f":0}
-d_delta = {"dlt_Prad":0, "dlt_Pz":0, "dlt_Mrad":0, "dlt_Mz":0, "dlt_Srad":0, "dlt_Sz":0, "dlt_Drad":26e7, "dlt_Dz":30e7, "dlt_tP":8.82e-5, "dlt_tM":3.19e-5, "dlt_tD":0, "dlt_theta_i":0, "dlt_theta_f":6.5e-3}
-det_shape = 'VCYL'
-
-l_lambda = [1, 3, 5, 10, 12, 20]
+#l_lambda = [1, 3, 5, 10, 12, 20]
 nb_lbd = len(l_lambda)
 violini = []
 violiniExt = []

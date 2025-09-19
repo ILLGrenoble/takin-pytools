@@ -130,20 +130,20 @@ IN5 = {
 
 #LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vio_cov_ext.length(0.1, 0.1, 9064.7, 1114.3, 170, 7, 27, -9234.7, sigPx, -1284.3, sigMx)
 
-k_i = 2*np.pi/5.9
-k_f = 2*np.pi/5.9
-#k_i = 2*np.pi/6
-#k_f = 2*np.pi/6
+#k_i = 2*np.pi/5.9
+#k_f = 2*np.pi/5.9
+k_i = 2*np.pi/2
+k_f = 2*np.pi/2
 #k_i = 3
 #k_f = 3
 v_i = vio_cov_ext.k2v(k_i)
 v_f = vio_cov_ext.k2v(k_f)
-v_rot = 2*14400
-#v_rot = 2*12000
+#v_rot = 2*14400
+v_rot = 2*12000
 
 
-Sr, Sh = 4e7, 50e7 #5e7, 50e7 #Mn-ac
-#Sr, Sh = 6e7, 60e7 #Vanadium
+#Sr, Sh = 4e7, 50e7 #5e7, 50e7 #Mn-ac
+Sr, Sh = 6e7, 60e7 #Vanadium
 thetaCP, thetaBP, wP = 9.0, 8.5, 12e7
 thetaCM, thetaBM, wM = 3.25, 3.0, 6e7
 Eyh, Ezh, Lpe, Lme, Les = 7e7, 27e7, 9064.7e7, 1114.3e7, 170e7
