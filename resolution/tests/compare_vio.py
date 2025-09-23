@@ -46,21 +46,21 @@ import libs.reso as reso
 l_vio_coh_mod1, l_vio_coh_mod2, l_vio_coh_mod3, l_vio_coh_mod4, l_vio_coh_mod5 = [], [], [], [], []
 l_vioext_coh_mod1, l_vioext_coh_mod2, l_vioext_coh_mod3, l_vioext_coh_mod4 = [], [], [], []
 l_vioext2_PS_coh_mod1, l_vioext2_PS_coh_mod2, l_vioext2_PS_coh_mod3 = [], [], []
-l_vioext2_VS_coh_mod1, l_vioext2_VS_coh_mod2, l_vioext2_VS_coh_mod3 = [], [], []
+l_vioext2_VS_coh_mod1, l_vioext2_VS_coh_mod2, l_vioext2_VS_coh_mod3, l_vioext2_VS_coh_mod4 = [], [], [], []
 
 l_vio_inc_mod1, l_vio_inc_mod2, l_vio_inc_mod3, l_vio_inc_mod4, l_vio_inc_mod5 = [], [], [], [], []
 l_vioext_inc_mod1, l_vioext_inc_mod2, l_vioext_inc_mod3, l_vioext_inc_mod4 = [], [], [], []
 l_vioext2_PS_inc_mod1, l_vioext2_PS_inc_mod2, l_vioext2_PS_inc_mod3 = [], [], []
-l_vioext2_VS_inc_mod1, l_vioext2_VS_inc_mod2, l_vioext2_VS_inc_mod3 = [], [], []
+l_vioext2_VS_inc_mod1, l_vioext2_VS_inc_mod2, l_vioext2_VS_inc_mod3, l_vioext2_VS_inc_mod4 = [], [], [], []
 
 
 l_lambda = [1, 3, 5, 10, 12, 20]
-lbdi = 6
+lbdi = 5.9
 lbdf = lbdi
-l_Q = [0.5, 1]
+l_Q = [0.632, 0.734, 0.969, 1.158, 1.214, 1.265, 1.421, 1.463, 1.552, 1.597]
 printEllipse = False
+v_rot = 14400 #12000
 for Q in l_Q:
-    v_rot = 12000
     a = 1  # 2*np.sqrt(3)
 
     k_i = 2*np.pi/lbdi
@@ -367,7 +367,8 @@ for Q in l_Q:
 
     # VOLUME SAMPLE
     print('------ VOLUME SAMPLE ------')
-    Sr, Sh = 6e7, 60e7
+    # Sr, Sh = 6e7, 60e7 #Vanadium
+    Sr, Sh = 4e7, 50e7      #5e7, 50e7 #Mn-ac
     VarDr = np.divide( np.square(2*Sr) + np.square(Wr), 12 )
     VarDtheta = np.square(0.0065)
     VarDx = np.square(np.cos(theta_f))*VarDr + np.square(Dr)*np.square(np.sin(theta_f))*VarDtheta
@@ -449,6 +450,7 @@ for Q in l_Q:
     l_vioext2_VS_inc_mod2.append( reso.calc_incoh_fwhms(covQhwInvVioExt2) )
 
     # 3e modele :
+    print('TROISIEME MODELE')
     a2 = np.divide(1, 12)
     Vartp, Vartm, Vartd = a2*Vartpref, a2*Vartmref, Vartdref
     VarPx, VarPy, VarPz = np.square( v_i*np.sqrt(Vartp) - wP ), VarPyref, VarPzref
@@ -476,6 +478,40 @@ for Q in l_Q:
     l_vioext2_VS_coh_mod3.append( reso.calc_coh_fwhms(covQhwInvVioExt2) )
     l_vioext2_VS_inc_mod3.append( reso.calc_incoh_fwhms(covQhwInvVioExt2) )
 
+    # 4e modele :
+    print('QUATRIEME MODELE')
+    VarDr = np.divide( np.square(Wr), 12 )
+    VarDx = np.square(np.cos(theta_f))*VarDr + np.square(Dr)*np.square(np.sin(theta_f))*VarDtheta
+    VarDy = np.square(np.sin(theta_f))*VarDr + np.square(Dr)*np.square(np.cos(theta_f))*VarDtheta
+    CovDxDy = np.cos(theta_f)*np.sin(theta_f) * ( VarDr - np.square(Dr)*VarDtheta )
+    Vartdref = np.divide( VarDr, np.square(v_f) )
+    a2 = np.divide(1, 12)
+    Vartp, Vartm, Vartd = a2*Vartpref, a2*Vartmref, Vartdref
+    VarPx, VarPy, VarPz = np.square( v_i*np.sqrt(Vartp) - wP ), VarPyref, VarPzref
+    VarMx, VarMy, VarMz = np.square( v_i*np.sqrt(Vartm) - wM ), VarMyref, VarMzref
+    VarSx, VarSy, VarSz = VarSxref, VarSyref, VarSzref
+    Var = [VarPx, VarPy, VarPz, VarMx, VarMy, VarMz, VarSx, VarSy, VarSz, VarDx, VarDy, VarDz, Vartp, Vartm, Vartd]
+    covInstr = np.eye(15)
+    for i in range(15):
+        covInstr[i][i] = Var[i]
+    covInstr[9][10], covInstr[10][9] = CovDxDy, CovDxDy
+
+    sigPx = np.sqrt(VarPx)
+    sigMx = np.sqrt(VarMx)
+    LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vce2.length(Sr, Sh, Lpe, Lme, Les, Eyh, Ezh, -(Lpe+Les), sigPx, -(Lme+Les), sigMx)
+    dict_la = {"L_PM":LPM, "L_PMx":LPMx, "L_PMy":LPMy, "L_PMz":LPMz, "L_MS":LMS, "L_MSx":LMSx, "L_MSy":LMSy, "L_MSz":LMSz, "L_SD":LSD, "L_SDx":LSDx, "L_SDy":LSDy, "L_SDz":LSDz}
+    shape = 'VCYL'
+
+    covQhwVioExt2 = vce2.cov(v_i, v_f, dict_la, covInstr, shape, False)
+    covQhwInvVioExt2 = la.inv(covQhwVioExt2)
+    covQhwInvVioExt2 = np.dot(rot.T, np.dot(covQhwInvVioExt2, rot))
+
+    ellipses = reso.calc_ellipses(covQhwInvVioExt2, verbose = True)
+    if print(ellipses):
+        reso.plot_ellipses(ellipses, verbose = True)
+    l_vioext2_VS_coh_mod4.append( reso.calc_coh_fwhms(covQhwInvVioExt2) )
+    l_vioext2_VS_inc_mod4.append( reso.calc_incoh_fwhms(covQhwInvVioExt2) )
+
 print('\n', 'VIO')
 print('modele 1 :', '  inc =', l_vio_inc_mod1, '        coh =', l_vio_coh_mod1)
 print('modele 2 :', '  inc =', l_vio_inc_mod2, '        coh =', l_vio_coh_mod2)
@@ -494,10 +530,11 @@ print('modele 1 :', '  inc =', l_vioext2_PS_inc_mod1, '        coh =', l_vioext2
 print('modele 2 :', '  inc =', l_vioext2_PS_inc_mod2, '        coh =', l_vioext2_PS_coh_mod2)
 print('modele 3 :', '  inc =', l_vioext2_PS_inc_mod3, '        coh =', l_vioext2_PS_coh_mod3)
 
-print('\n', 'VIOEXT2 - POINT SAMPLE')
+print('\n', 'VIOEXT2 - VOLUME SAMPLE')
 print('modele 1 :', '  inc =', l_vioext2_VS_inc_mod1, '        coh =', l_vioext2_VS_coh_mod1)
 print('modele 2 :', '  inc =', l_vioext2_VS_inc_mod2, '        coh =', l_vioext2_VS_coh_mod2)
 print('modele 3 :', '  inc =', l_vioext2_VS_inc_mod3, '        coh =', l_vioext2_VS_coh_mod3)
+print('modele 4 :', '  inc =', l_vioext2_VS_inc_mod4, '        coh =', l_vioext2_VS_coh_mod4)
 
 def savemodel(nomf, lQ, model):
     dltQpara, dltQperp, dltQup, dltE = [], [], [], []
@@ -514,4 +551,22 @@ def savemodel(nomf, lQ, model):
         fichier.close()
     return 0
 
-savemodel('test.txt', l_Q, l_vio_coh_mod5)
+
+#chemin = '/home/mecoli/Git/These/these_victor_tex/Biblio/TOF/IN5/Data/Vana/measurement_and_model/'   # Vanadium
+chemin = '/home/mecoli/Git/These/these_victor_tex/Biblio/TOF/IN5/Data/Mn-ac/model/'    # Mn-ac
+#Vio
+nomVio = chemin + 'Mn-ac_{}A_VIO.txt'.format(lbdi)
+savemodel(nomVio, l_Q, l_vio_coh_mod5)
+#Vioext
+nomVioext = chemin + 'Mn-ac_{}A_VIOEXT.txt'.format(lbdi)
+savemodel(nomVioext, l_Q, l_vioext_coh_mod4)
+# Vioext2-PS
+nomVioext2_PS = chemin + 'Mn-ac_{}A_VIOEXT2_PS.txt'.format(lbdi)
+savemodel(nomVioext2_PS, l_Q, l_vioext2_PS_coh_mod3)
+# Vioext2-VS
+nomVioext2_VS_DrSD = chemin + 'Mn-ac_{}A_VIOEXT2_VS_dltDr=S+D.txt'.format(lbdi)
+savemodel(nomVioext2_VS_DrSD, l_Q, l_vioext2_VS_coh_mod3)
+nomVioext2_VS_DrD = chemin + 'Mn-ac_{}A_VIOEXT2_VS_dltDr=D.txt'.format(lbdi)
+savemodel(nomVioext2_VS_DrD, l_Q, l_vioext2_VS_coh_mod4)
+
+#savemodel('test.txt', l_Q, l_vio_coh_mod5)

@@ -149,7 +149,7 @@ thetaCM, thetaBM, wM = 3.25, 3.0, 6e7
 Eyh, Ezh, Lpe, Lme, Les = 7e7, 27e7, 9064.7e7, 1114.3e7, 170e7
 Dr, Hdet, Wr = 4000e7, 3000e7, 26e7
 VarDr = np.divide( np.square(2*Sr) + np.square(Wr), 12 )
-VarDtheta = np.square(0.0065)/12#( (1 - np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Dr)))))*(2*np.divide(np.square(Dr), np.square(Sr)) - np.divide(np.square(Wr), 6*np.square(Sr)))
+VarDtheta = np.square(0.0065)#( (1 - np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Dr)))))*(2*np.divide(np.square(Dr), np.square(Sr)) - np.divide(np.square(Wr), 6*np.square(Sr)))
              #+ np.divide(2, np.sqrt(1 - np.divide(np.square(Sr), np.square(Dr)))) -1 )
 print(np.sqrt(VarDtheta))
 
