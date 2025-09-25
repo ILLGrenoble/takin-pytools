@@ -277,7 +277,7 @@ def covxiMatrix(deltas):
 def length(radS, heiS, L_PE, L_ME, L_ES, wEy, wEz, moyPx, sigPx, moyMx, sigMx):
     LPS, LPSx, LPSy, LPSz = 0, 0, 0, 0
     LMS, LMSx, LMSy, LMSz = 0, 0, 0, 0
-    nb_pts = 50000
+    nb_pts = 100000
     for i in range(nb_pts):
         Sr, theta, Sz = radS*np.sqrt(np.random.uniform(0,1)), 2*np.pi*np.random.uniform(0,1), np.random.uniform(-heiS/2, heiS/2)
         Sx, Sy = Sr*np.cos(theta), Sr*np.sin(theta)

@@ -57,7 +57,7 @@ l_vioext2_VS_inc_mod1, l_vioext2_VS_inc_mod2, l_vioext2_VS_inc_mod3, l_vioext2_V
 l_lambda = [1, 3, 5, 10, 12, 20]
 lbdi = 5.9
 lbdf = lbdi
-l_Q = [0.632, 0.734, 0.969, 1.158, 1.214, 1.265, 1.421, 1.463, 1.552, 1.597]
+l_Q = [0.632, 0.734, 0.969, 1.033, 1.159, 1.216, 1.265, 1.421, 1.463, 1.551, 1.597, 1.641, 1.751, 1.870, 1.90, 1.938]
 printEllipse = False
 v_rot = 14400 #12000
 for Q in l_Q:
@@ -90,7 +90,7 @@ for Q in l_Q:
     covQhwInvVio = np.dot(rot.T, np.dot(covQhwInvVio, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVio, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vio_coh_mod1.append( reso.calc_coh_fwhms(covQhwInvVio) )
     l_vio_inc_mod1.append( reso.calc_incoh_fwhms(covQhwInvVio) )
@@ -108,7 +108,7 @@ for Q in l_Q:
     covQhwInvVio = np.dot(rot.T, np.dot(covQhwInvVio, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVio, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vio_coh_mod2.append( reso.calc_coh_fwhms(covQhwInvVio) )
     l_vio_inc_mod2.append( reso.calc_incoh_fwhms(covQhwInvVio) )
@@ -126,7 +126,7 @@ for Q in l_Q:
     covQhwInvVio = np.dot(rot.T, np.dot(covQhwInvVio, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVio, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vio_coh_mod3.append( reso.calc_coh_fwhms(covQhwInvVio) )
     l_vio_inc_mod3.append( reso.calc_incoh_fwhms(covQhwInvVio) )
@@ -144,7 +144,7 @@ for Q in l_Q:
     covQhwInvVio = np.dot(rot.T, np.dot(covQhwInvVio, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVio, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vio_coh_mod4.append( reso.calc_coh_fwhms(covQhwInvVio) )
     l_vio_inc_mod4.append( reso.calc_incoh_fwhms(covQhwInvVio) )
@@ -162,7 +162,7 @@ for Q in l_Q:
     covQhwInvVio = np.dot(rot.T, np.dot(covQhwInvVio, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVio, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vio_coh_mod5.append( reso.calc_coh_fwhms(covQhwInvVio) )
     l_vio_inc_mod5.append( reso.calc_incoh_fwhms(covQhwInvVio) )
@@ -185,7 +185,7 @@ for Q in l_Q:
     covQhwInvVioExt = np.dot(rot.T, np.dot(covQhwInvVioExt, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVioExt, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vioext_coh_mod1.append( reso.calc_coh_fwhms(covQhwInvVioExt) )
     l_vioext_inc_mod1.append( reso.calc_incoh_fwhms(covQhwInvVioExt) )
@@ -203,7 +203,7 @@ for Q in l_Q:
     covQhwInvVioExt = np.dot(rot.T, np.dot(covQhwInvVioExt, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVioExt, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vioext_coh_mod2.append( reso.calc_coh_fwhms(covQhwInvVioExt) )
     l_vioext_inc_mod2.append( reso.calc_incoh_fwhms(covQhwInvVioExt) )
@@ -221,7 +221,7 @@ for Q in l_Q:
     covQhwInvVioExt = np.dot(rot.T, np.dot(covQhwInvVioExt, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVioExt, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vioext_coh_mod3.append( reso.calc_coh_fwhms(covQhwInvVioExt) )
     l_vioext_inc_mod3.append( reso.calc_incoh_fwhms(covQhwInvVioExt) )
@@ -239,7 +239,7 @@ for Q in l_Q:
     covQhwInvVioExt = np.dot(rot.T, np.dot(covQhwInvVioExt, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVioExt, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vioext_coh_mod4.append( reso.calc_coh_fwhms(covQhwInvVioExt) )
     l_vioext_inc_mod4.append( reso.calc_incoh_fwhms(covQhwInvVioExt) )
@@ -305,7 +305,7 @@ for Q in l_Q:
     covQhwInvVioExt2 = np.dot(rot.T, np.dot(covQhwInvVioExt2, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVioExt2, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vioext2_PS_coh_mod1.append( reso.calc_coh_fwhms(covQhwInvVioExt2) )
     l_vioext2_PS_inc_mod1.append( reso.calc_incoh_fwhms(covQhwInvVioExt2) )
@@ -333,7 +333,7 @@ for Q in l_Q:
     covQhwInvVioExt2 = np.dot(rot.T, np.dot(covQhwInvVioExt2, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVioExt2, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vioext2_PS_coh_mod2.append( reso.calc_coh_fwhms(covQhwInvVioExt2) )
     l_vioext2_PS_inc_mod2.append( reso.calc_incoh_fwhms(covQhwInvVioExt2) )
@@ -360,7 +360,7 @@ for Q in l_Q:
     covQhwInvVioExt2 = np.dot(rot.T, np.dot(covQhwInvVioExt2, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVioExt2, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vioext2_PS_coh_mod3.append( reso.calc_coh_fwhms(covQhwInvVioExt2) )
     l_vioext2_PS_inc_mod3.append( reso.calc_incoh_fwhms(covQhwInvVioExt2) )
@@ -415,7 +415,7 @@ for Q in l_Q:
     covQhwInvVioExt2 = np.dot(rot.T, np.dot(covQhwInvVioExt2, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVioExt2, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vioext2_VS_coh_mod1.append( reso.calc_coh_fwhms(covQhwInvVioExt2) )
     l_vioext2_VS_inc_mod1.append( reso.calc_incoh_fwhms(covQhwInvVioExt2) )
@@ -444,7 +444,7 @@ for Q in l_Q:
     covQhwInvVioExt2 = np.dot(rot.T, np.dot(covQhwInvVioExt2, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVioExt2, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vioext2_VS_coh_mod2.append( reso.calc_coh_fwhms(covQhwInvVioExt2) )
     l_vioext2_VS_inc_mod2.append( reso.calc_incoh_fwhms(covQhwInvVioExt2) )
@@ -473,7 +473,7 @@ for Q in l_Q:
     covQhwInvVioExt2 = np.dot(rot.T, np.dot(covQhwInvVioExt2, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVioExt2, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vioext2_VS_coh_mod3.append( reso.calc_coh_fwhms(covQhwInvVioExt2) )
     l_vioext2_VS_inc_mod3.append( reso.calc_incoh_fwhms(covQhwInvVioExt2) )
@@ -507,7 +507,7 @@ for Q in l_Q:
     covQhwInvVioExt2 = np.dot(rot.T, np.dot(covQhwInvVioExt2, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVioExt2, verbose = True)
-    if print(ellipses):
+    if printEllipse:
         reso.plot_ellipses(ellipses, verbose = True)
     l_vioext2_VS_coh_mod4.append( reso.calc_coh_fwhms(covQhwInvVioExt2) )
     l_vioext2_VS_inc_mod4.append( reso.calc_incoh_fwhms(covQhwInvVioExt2) )
@@ -555,18 +555,18 @@ def savemodel(nomf, lQ, model):
 #chemin = '/home/mecoli/Git/These/these_victor_tex/Biblio/TOF/IN5/Data/Vana/measurement_and_model/'   # Vanadium
 chemin = '/home/mecoli/Git/These/these_victor_tex/Biblio/TOF/IN5/Data/Mn-ac/model/'    # Mn-ac
 #Vio
-nomVio = chemin + 'Mn-ac_{}A_VIO.txt'.format(lbdi)
+nomVio = chemin + 'Mn-ac_23p8K_{}A_VIO.txt'.format(lbdi)
 savemodel(nomVio, l_Q, l_vio_coh_mod5)
 #Vioext
-nomVioext = chemin + 'Mn-ac_{}A_VIOEXT.txt'.format(lbdi)
+nomVioext = chemin + 'Mn-ac_23p8K_{}A_VIOEXT.txt'.format(lbdi)
 savemodel(nomVioext, l_Q, l_vioext_coh_mod4)
 # Vioext2-PS
-nomVioext2_PS = chemin + 'Mn-ac_{}A_VIOEXT2_PS.txt'.format(lbdi)
+nomVioext2_PS = chemin + 'Mn-ac_23p8K_{}A_VIOEXT2_PS.txt'.format(lbdi)
 savemodel(nomVioext2_PS, l_Q, l_vioext2_PS_coh_mod3)
 # Vioext2-VS
-nomVioext2_VS_DrSD = chemin + 'Mn-ac_{}A_VIOEXT2_VS_dltDr=S+D.txt'.format(lbdi)
+nomVioext2_VS_DrSD = chemin + 'Mn-ac_23p8K_{}A_VIOEXT2_VS_dltDr=S+D.txt'.format(lbdi)
 savemodel(nomVioext2_VS_DrSD, l_Q, l_vioext2_VS_coh_mod3)
-nomVioext2_VS_DrD = chemin + 'Mn-ac_{}A_VIOEXT2_VS_dltDr=D.txt'.format(lbdi)
+nomVioext2_VS_DrD = chemin + 'Mn-ac_23p8K_{}A_VIOEXT2_VS_dltDr=D.txt'.format(lbdi)
 savemodel(nomVioext2_VS_DrD, l_Q, l_vioext2_VS_coh_mod4)
 
 #savemodel('test.txt', l_Q, l_vio_coh_mod5)
