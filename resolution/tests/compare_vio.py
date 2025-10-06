@@ -1,7 +1,4 @@
 #
-# TODO: implementation of the violini algo
-# 
-#
 # @author Mecoli Victor <mecoli@ill.fr>
 # @date feb-2025
 # @license GPLv2
