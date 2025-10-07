@@ -221,7 +221,7 @@ ma_distribution = trapeze_distribution(a, b, c, d)
 
 # Tirer un nombre aléatoirement selon cette densité
 moy = 0
-nb = 1000
+nb = 10
 for i in range(nb):
     moy += ma_distribution.rvs()
 print(moy/nb)

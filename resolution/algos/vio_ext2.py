@@ -118,3 +118,8 @@ def calc(param):
     res["reso"] = covQhwInv_r
     res["ok"] = True
     return res
+
+print(vce2.k2v(2*np.pi/6)*1e-7)
+print(np.divide( 9 - 8.5, 6*14000 ))
+print(np.divide( 0.25, 6*14000 )*vce2.k2v(2*np.pi/2)*1e-7)
+
