@@ -34,6 +34,7 @@
 
 import numpy as np
 import numpy.linalg as la
+from scipy.stats import rv_continuous
 
 # Conversion
 meV2J = 1.602176634e-22
@@ -45,6 +46,45 @@ hbar = np.divide(h, 2*np.pi)
 
 #Initialisation of the covariance Matrix
 covQhw = np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
+
+class trapeze_distribution(rv_continuous):
+    def __init__(self, a, b, c, d):
+        super().__init__(a=a, b=d)
+        self.a, self.b, self.c, self.d, self.J = a, b, c, d, np.divide(2, d + c - b - a)
+
+    def _pdf(self, x):
+        if x < self.a or x > self.d:
+            return 0
+        elif self.a <= x < self.b:
+            return np.divide(self.J * (x - self.a), (self.b - self.a))
+        elif self.b <= x <= self.c:
+            return self.J
+        else:
+            return np.divide(self.J*(self.d - x), (self.d - self.c))
+        
+    def _cdf(self, x):
+        if x < self.a:
+            return 0
+        elif self.a <= x < self.b:
+            return np.divide(self.J*np.square(x - self.a), 2*(self.b - self.a))
+        elif self.b <= x < self.c:
+            return np.divide(self.J*(2*x - self.a - self.b), 2)
+        elif self.c <= x < self.d:
+            return np.divide(self.J*(np.square(self.c) + (self.a + self.b)*(self.d - self.c) - 2*self.d*x + np.square(x), 2*(self.c - self.d)))
+        else:
+            return 1
+        
+a, b, c, d = 0, 1, 3, 4
+ma_distribution = trapeze_distribution(a, b, c, d)
+print(ma_distribution.rvs())
+
+# Tirer un nombre aléatoirement selon cette densité
+moy = 0
+nb = 100
+for i in range(nb):
+    moy += ma_distribution.rvs()
+print(moy/nb)
+
 
 def k2v(k:float):
     return np.divide(k*np.square(m2A)*hbar, m_n)
@@ -191,40 +231,3 @@ def cov(v_i:float, v_f:float, dict_L:dict, cov_instr:np.array, shape='VCYL', ver
 
     return covQhw
 
-
-
-
-from scipy.stats import rv_continuous
-
-class trapeze_distribution(rv_continuous):
-    def __init__(self, a, b, c, d):
-        super().__init__(a=a, b=b)
-        self.a, self.b, self.c, self.d = a, b, c, d
-        # Calcul de la hauteur du plateau pour normaliser la densité
-        self.h = 2 / ((b - a) + (d - c))
-
-    def _pdf(self, x):
-        if x < self.a or x > self.b:
-            return 0
-        elif self.a <= x < self.c:
-            # Montée linéaire entre a et c
-            return self.h * (x - self.a) / (self.c - self.a)
-        elif self.c <= x <= self.d:
-            # Plateau constant entre c et d
-            return self.h
-        else:
-            # Descente linéaire entre d et b
-            return self.h * (self.b - x) / (self.b - self.d)
-        
-a, b, c, d = 0, 4, 1, 3
-ma_distribution = trapeze_distribution(a, b, c, d)
-
-# Tirer un nombre aléatoirement selon cette densité
-moy = 0
-nb = 10
-for i in range(nb):
-    moy += ma_distribution.rvs()
-print(moy/nb)
-
-Dw, Dr, Sr = 26e7, 4000e7, 6e7
-print( np.divide(2*Dw*( Dr - np.sqrt( np.square(Dr) - np.square(Sr) ) ), np.square(Sr)) )
