@@ -38,7 +38,7 @@ import numpy as np
 import numpy.linalg as la
 import libs.tas as tas
 import libs.helpers as helpers
-import algos.vio_cov_ext2 as vce2
+import algos.vio_cov_ext2_1 as vce2
 
 
 #
@@ -54,7 +54,7 @@ def calc(param):
     if det_shape not in ('VCYL'): # 'SPHERE' will be added
         print("this shape is not taken in account")
         return None
-    v_rot = 2*param["v_rot"]
+    v_rot = param["v_rot"]
     Sr, Sh = param["sample_radius"], param["sample_height"]
     thetaCP, thetaBP, wP = param["windows_angle_chopper_P"], param["beam_angle_chopper_P"], param["width_chopper_P"]
     thetaCM, thetaBM, wM = param["windows_angle_chopper_M"], param["beam_angle_chopper_M"], param["width_chopper_M"]
@@ -64,11 +64,13 @@ def calc(param):
     VarDr = np.divide(np.square(Dw), 12)
     VarDtheta = np.square( np.divide(2*Dw*( Dr - np.sqrt( np.square(Dr) - np.square(Sr) ) ), np.square(Sr)) )
     Vartp, Vartm, Vartd = np.divide( np.square(thetaCP) + np.square(thetaBP), 12*np.square(6*v_rot) ), np.divide( np.square(thetaCM) + np.square(thetaBM), 12*np.square(6*v_rot) ), np.divide( VarDr, np.square(vf) )
-    VarPx = 0
+    VarPx, slopePx, distribPx = 1, 1, 'Trapeze'
     if wP < vi*np.divide(thetaCP - thetaBP, 6*v_rot):
         VarPx = np.divide(np.square(vi)*( np.square(thetaCP) + np.square(thetaBP) ) - 2*wP*vi*thetaCP*6*v_rot + np.square(wP)*np.square(6*v_rot), 12*np.square(6*v_rot))
-    else :
+        slopePx = np.divide(np.square(6*v_rot), np.square(vi)*thetaBP*thetaCP - wP*vi*thetaBP*(6*v_rot))
+    else:
         VarPx = np.divide( np.square(vi*(thetaCP + thetaBP) - wP*6*v_rot), 24*np.square(6*v_rot) )
+        distribPx = 'Triangle'
     VarPy = ( np.divide(np.square(Eyh), 3)
             + np.square(Lpe)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
             + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
@@ -76,11 +78,13 @@ def calc(param):
     VarPz = ( np.divide(np.square(Ezh), 3)
             + np.divide(np.square(Lpe), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
             + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
-    VarMx = 0
+    VarMx, slopeMx, distribMx = 1, 1, 'Trapeze'
     if wM < vi*np.divide(thetaCM - thetaBM, 6*v_rot):
         VarMx = np.divide(np.square(vi)*( np.square(thetaCM) + np.square(thetaBM) ) - 2*wM*vi*thetaCM*6*v_rot + np.square(wM)*np.square(6*v_rot), 12*np.square(6*v_rot))
+        slopeMx = np.divide(np.square(6*v_rot), np.square(vi)*thetaBM*thetaCM - wM*vi*thetaBM*(6*v_rot))
     else :
         VarMx = np.divide( np.square(vi*(thetaCM + thetaBM) - wM*6*v_rot), 24*np.square(6*v_rot) )
+        distribMx = 'Triangle'
     VarMy = ( np.divide(np.square(Eyh), 3)
             + np.square(Lme)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
             + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
@@ -95,7 +99,7 @@ def calc(param):
     CovDxDy = np.cos(theta_f)*np.sin(theta_f)*VarDr - np.square(Dr)*np.cos(theta_f)*np.sin(theta_f)*VarDtheta
     covInstr = vce2.covInstrument(VarPx, VarPy, VarPz, VarMx, VarMy, VarMz, VarSx, VarSy, VarSz, VarDx, VarDy, VarDz, Vartp, Vartm, Vartd, CovDxDy)
 
-    LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vce2.length(Sr, Sh, Lpe, Lme, Les, Eyh, Ezh, -(Lpe+Les), np.sqrt(VarPx), -(Lme+Les), np.sqrt(VarMx))
+    LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vce2.length(Sr, Sh, Lpe, Lme, Les, Eyh, Ezh, -(Lpe+Les), VarPx, slopePx, distribPx, -(Lme+Les), VarMx, slopeMx, distribMx)
     LSD, LSDz = Dr, param["det_z"]
     LSDx, LSDy = LSD*np.cos(theta_f), LSD*np.sin(theta_f)
     dict_L = {"L_PM":LPM, "L_PMx":LPMx, "L_PMy":LPMy, "L_PMz":LPMz, "L_MS":LMS, "L_MSx":LMSx, "L_MSy":LMSy, "L_MSz":LMSz, "L_SD":LSD, "L_SDx":LSDx, "L_SDy":LSDy, "L_SDz":LSDz}

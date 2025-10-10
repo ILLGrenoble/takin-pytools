@@ -38,25 +38,31 @@ import libs.helpers as helpers
 import algos.vio_cov as vc
 import algos.vio_cov_ext as vce
 import algos.vio_cov_ext2 as vce2
+import algos.vio_cov_ext2_1 as vce21
 import libs.reso as reso
 
 l_vio_coh_mod1, l_vio_coh_mod2, l_vio_coh_mod3, l_vio_coh_mod4, l_vio_coh_mod5 = [], [], [], [], []
 l_vioext_coh_mod1, l_vioext_coh_mod2, l_vioext_coh_mod3, l_vioext_coh_mod4 = [], [], [], []
 l_vioext2_PS_coh_mod1, l_vioext2_PS_coh_mod2, l_vioext2_PS_coh_mod3 = [], [], []
 l_vioext2_VS_coh_mod1, l_vioext2_VS_coh_mod2, l_vioext2_VS_coh_mod3, l_vioext2_VS_coh_mod4 = [], [], [], []
+l_vioext21_PS_coh_mod1 = []
+l_vioext21_VS_coh_mod1, l_vioext21_VS_coh_mod2 = [], []
 
 l_vio_inc_mod1, l_vio_inc_mod2, l_vio_inc_mod3, l_vio_inc_mod4, l_vio_inc_mod5 = [], [], [], [], []
 l_vioext_inc_mod1, l_vioext_inc_mod2, l_vioext_inc_mod3, l_vioext_inc_mod4 = [], [], [], []
 l_vioext2_PS_inc_mod1, l_vioext2_PS_inc_mod2, l_vioext2_PS_inc_mod3 = [], [], []
 l_vioext2_VS_inc_mod1, l_vioext2_VS_inc_mod2, l_vioext2_VS_inc_mod3, l_vioext2_VS_inc_mod4 = [], [], [], []
+l_vioext21_PS_inc_mod1 = []
+l_vioext21_VS_inc_mod1, l_vioext21_VS_inc_mod2 = [], []
 
 
 l_lambda = [1, 3, 5, 10, 12, 20]
-lbdi = 5.9
+lbdi = 4.8
 lbdf = lbdi
-l_Q = [0.632, 1.265, 1.597]#[0.632, 0.734, 0.969, 1.033, 1.159, 1.216, 1.265, 1.421, 1.463, 1.551, 1.597] #[0.632, 0.734, 0.969, 1.033, 1.159, 1.216, 1.265, 1.421, 1.463, 1.551, 1.597, 1.641, 1.751, 1.870, 1.90, 1.938]
+#l_Q = [0.632, 1.265, 1.597]#[0.632, 0.734, 0.969, 1.033, 1.159, 1.216, 1.265, 1.421, 1.463, 1.551, 1.597] #[0.632, 0.734, 0.969, 1.033, 1.159, 1.216, 1.265, 1.421, 1.463, 1.551, 1.597, 1.641, 1.751, 1.870, 1.90, 1.938]
+l_Q = [2.419, 1.9, 1.5, 0.99, 0.54, 0.158]
 printEllipse = False
-v_rot = 14400 #12000
+v_rot = 12000 #14400
 for Q in l_Q:
     a = 1  # 2*np.sqrt(3)
 
@@ -504,10 +510,187 @@ for Q in l_Q:
     covQhwInvVioExt2 = np.dot(rot.T, np.dot(covQhwInvVioExt2, rot))
 
     ellipses = reso.calc_ellipses(covQhwInvVioExt2, verbose = True)
-    #if printEllipse:
-    reso.plot_ellipses(ellipses, verbose = True)
+    if printEllipse:
+        reso.plot_ellipses(ellipses, verbose = True)
     l_vioext2_VS_coh_mod4.append( reso.calc_coh_fwhms(covQhwInvVioExt2) )
     l_vioext2_VS_inc_mod4.append( reso.calc_incoh_fwhms(covQhwInvVioExt2) )
+    
+    print('---------------------------------------- vio_ext2_1.py ----------------------------------------')
+    # ---------------------------------------- vio_ext2_1.py ----------------------------------------
+    thetaCP, thetaBP, wP = 9.0, 8.5, 12e7
+    thetaCM, thetaBM, wM = 3.25, 3.0, 6e7
+    Eyh, Ezh, Lpe, Lme, Les = 7e7, 27e7, 9064.7e7, 1114.3e7, 170e7
+    Dr, Hdet, Wr = 4000e7, 3000e7, 26e7
+
+    LSD, LSDz = Dr, 0
+    LSDx, LSDy = LSD*np.cos(theta_f), LSD*np.sin(theta_f)
+    Vartpref = np.divide( np.square(thetaCP) + np.square(thetaBP), np.square(6*2*v_rot) )
+    Vartmref = np.divide( np.square(thetaCM) + np.square(thetaBM), np.square(6*2*v_rot) )
+    VarDz = np.divide(1, 12) * np.square(np.divide(Hdet, 100))
+
+    # POINT SAMPLE
+    print('------ POINT SAMPLE ------')
+    Sr, Sh = 1e3, 1e3
+    VarDr = np.divide( np.square(2*Sr) + np.square(Wr), 12 )
+    VarDtheta = np.square(0.0065)
+    VarDx = np.square(np.cos(theta_f))*VarDr + np.square(Dr)*np.square(np.sin(theta_f))*VarDtheta
+    VarDy = np.square(np.sin(theta_f))*VarDr + np.square(Dr)*np.square(np.cos(theta_f))*VarDtheta
+    CovDxDy = np.cos(theta_f)*np.sin(theta_f) * ( VarDr - np.square(Dr)*VarDtheta )
+    VarSx, VarSy, VarSz = 0, 0, 0
+    Vartdref = np.divide( VarDr, np.square(v_f) )
+    VarPyref = ( np.divide(np.square(Eyh), 3)
+            + np.square(Lpe)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
+            + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
+            + np.divide(2*np.square(Lpe), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
+    VarPzref = ( np.divide(np.square(Ezh), 3)
+            + np.divide(np.square(Lpe), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
+            + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
+    VarMyref = ( np.divide(np.square(Eyh), 3)
+            + np.square(Lme)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
+            + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
+            + np.divide(2*np.square(Lme), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
+    VarMzref = ( np.divide(np.square(Ezh), 3)
+            + np.divide(np.square(Lme), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
+            + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
+
+    # 1er modele :
+    print('PREMIER MODELE')
+    a2 = np.divide(1, 12)
+    Vartp, Vartm, Vartd = a2*Vartpref, a2*Vartmref, Vartdref
+    VarPx, slopePx, distribPx = 1, 1, 'Trapeze' 
+    if wP < v_i*np.divide(thetaCP - thetaBP, 6*2*v_rot):
+        VarPx = np.divide(np.square(v_i)*( np.square(thetaCP) + np.square(thetaBP) ) - 2*wP*v_i*thetaCP*6*2*v_rot + np.square(wP)*np.square(6*2*v_rot), 12*np.square(6*2*v_rot))
+        slopePx = np.divide(np.square(6*2*v_rot), np.square(v_i)*thetaBP*thetaCP - wP*v_i*thetaBP*(6*2*v_rot))
+    else:
+        VarPx = np.divide( np.square(v_i*(thetaCP + thetaBP) - wP*6*2*v_rot), 24*np.square(6*2*v_rot) )
+        distribPx = 'Triangle'
+    VarPy, VarPz = VarPyref, VarPzref
+    VarMx, slopeMx, distribMx = 1, 1, 'Trapeze'
+    if wM < v_i*np.divide(thetaCM - thetaBM, 6*2*v_rot):
+        VarMx = np.divide(np.square(v_i)*( np.square(thetaCM) + np.square(thetaBM) ) - 2*wM*v_i*thetaCM*6*2*v_rot + np.square(wM)*np.square(6*2*v_rot), 12*np.square(6*2*v_rot))
+        slopeMx = np.divide(np.square(6*2*v_rot), np.square(v_i)*thetaBM*thetaCM - wM*v_i*thetaBM*(6*2*v_rot))
+    else :
+        VarMx = np.divide( np.square(v_i*(thetaCM + thetaBM) - wM*6*2*v_rot), 24*np.square(6*2*v_rot) )
+        distribMx = 'Triangle'
+    VarMy, VarMz = VarMyref, VarMzref
+    LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vce21.length(Sr, Sh, Lpe, Lme, Les, Eyh, Ezh, -(Lpe+Les), VarPx, slopePx, distribPx, -(Lme+Les), VarMx, slopeMx, distribMx)
+    covInstr = vce21.covInstrument(VarPx, VarPy, VarPz, VarMx, VarMy, VarMz, VarSx, VarSy, VarSz, VarDx, VarDy, VarDz, Vartp, Vartm, Vartd, CovDxDy)
+    dict_la = {"L_PM":LPM, "L_PMx":LPMx, "L_PMy":LPMy, "L_PMz":LPMz, "L_MS":LMS, "L_MSx":LMSx, "L_MSy":LMSy, "L_MSz":LMSz, "L_SD":LSD, "L_SDx":LSDx, "L_SDy":LSDy, "L_SDz":LSDz}
+    shape = 'VCYL'
+    
+    covQhwVioExt21 = vce21.cov(v_i, v_f, dict_la, covInstr, shape, False)
+    covQhwInvVioExt21 = la.inv(covQhwVioExt21)
+    covQhwInvVioExt21 = np.dot(rot.T, np.dot(covQhwInvVioExt21, rot))
+
+    ellipses = reso.calc_ellipses(covQhwInvVioExt21, verbose = True)
+    if printEllipse:
+        reso.plot_ellipses(ellipses, verbose = True)
+    l_vioext21_PS_coh_mod1.append( reso.calc_coh_fwhms(covQhwInvVioExt21) )
+    l_vioext21_PS_inc_mod1.append( reso.calc_incoh_fwhms(covQhwInvVioExt21) )
+
+    # VOLUME SAMPLE
+    print('------ VOLUME SAMPLE ------')
+    Sr, Sh = 6e7, 60e7 #Vanadium
+    # Sr, Sh = 4e7, 50e7      #5e7, 50e7 #Mn-ac
+    
+    VarDtheta = np.square(0.0065)
+    VarDx = np.square(np.cos(theta_f))*VarDr + np.square(Dr)*np.square(np.sin(theta_f))*VarDtheta
+    VarDy = np.square(np.sin(theta_f))*VarDr + np.square(Dr)*np.square(np.cos(theta_f))*VarDtheta
+    CovDxDy = np.cos(theta_f)*np.sin(theta_f) * ( VarDr - np.square(Dr)*VarDtheta )
+    VarSxref, VarSyref, VarSzref = np.divide(np.square(Sr), 4), np.divide(np.square(Sr), 4), np.divide(np.square(Sh), 12)
+    Vartdref = np.divide( VarDr, np.square(v_f) )
+    VarPyref = ( np.divide(np.square(Eyh), 3)
+            + np.square(Lpe)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
+            + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
+            + np.divide(2*np.square(Lpe), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
+    VarPzref = ( np.divide(np.square(Ezh), 3)
+            + np.divide(np.square(Lpe), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
+            + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
+    VarMyref = ( np.divide(np.square(Eyh), 3)
+            + np.square(Lme)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
+            + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
+            + np.divide(2*np.square(Lme), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
+    VarMzref = ( np.divide(np.square(Ezh), 3)
+            + np.divide(np.square(Lme), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
+            + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
+
+    # 1er modele :
+    print('PREMIER MODELE')
+    a2 = np.divide(1, 12)
+    VarDr = np.divide( np.square(2*Sr) + np.square(Wr), 12 )
+    Vartp, Vartm, Vartd = a2*Vartpref, a2*Vartmref, Vartdref
+    VarPx, slopePx, distribPx = 1, 1, 'Trapeze' 
+    if wP < v_i*np.divide(thetaCP - thetaBP, 6*2*v_rot):
+        VarPx = np.divide(np.square(v_i)*( np.square(thetaCP) + np.square(thetaBP) ) - 2*wP*v_i*thetaCP*6*2*v_rot + np.square(wP)*np.square(6*2*v_rot), 12*np.square(6*2*v_rot))
+        slopePx = np.divide(np.square(6*2*v_rot), np.square(v_i)*thetaBP*thetaCP - wP*v_i*thetaBP*(6*2*v_rot))
+    else:
+        VarPx = np.divide( np.square(v_i*(thetaCP + thetaBP) - wP*6*2*v_rot), 24*np.square(6*2*v_rot) )
+        distribPx = 'Triangle'
+    VarPy, VarPz = VarPyref, VarPzref
+    VarMx, slopeMx, distribMx = 1, 1, 'Trapeze'
+    if wM < v_i*np.divide(thetaCM - thetaBM, 6*2*v_rot):
+        VarMx = np.divide(np.square(v_i)*( np.square(thetaCM) + np.square(thetaBM) ) - 2*wM*v_i*thetaCM*6*2*v_rot + np.square(wM)*np.square(6*2*v_rot), 12*np.square(6*2*v_rot))
+        slopeMx = np.divide(np.square(6*2*v_rot), np.square(v_i)*thetaBM*thetaCM - wM*v_i*thetaBM*(6*2*v_rot))
+    else :
+        VarMx = np.divide( np.square(v_i*(thetaCM + thetaBM) - wM*6*2*v_rot), 24*np.square(6*2*v_rot) )
+        distribMx = 'Triangle'
+    VarMy, VarMz = VarMyref, VarMzref
+    VarSx, VarSy, VarSz = VarSxref, VarSyref, VarSzref
+    LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vce21.length(Sr, Sh, Lpe, Lme, Les, Eyh, Ezh, -(Lpe+Les), VarPx, slopePx, distribPx, -(Lme+Les), VarMx, slopeMx, distribMx)
+    covInstr = vce21.covInstrument(VarPx, VarPy, VarPz, VarMx, VarMy, VarMz, VarSx, VarSy, VarSz, VarDx, VarDy, VarDz, Vartp, Vartm, Vartd, CovDxDy)
+    dict_la = {"L_PM":LPM, "L_PMx":LPMx, "L_PMy":LPMy, "L_PMz":LPMz, "L_MS":LMS, "L_MSx":LMSx, "L_MSy":LMSy, "L_MSz":LMSz, "L_SD":LSD, "L_SDx":LSDx, "L_SDy":LSDy, "L_SDz":LSDz}
+    shape = 'VCYL'
+    
+    covQhwVioExt21 = vce21.cov(v_i, v_f, dict_la, covInstr, shape, False)
+    covQhwInvVioExt21 = la.inv(covQhwVioExt21)
+    covQhwInvVioExt21 = np.dot(rot.T, np.dot(covQhwInvVioExt21, rot))
+
+    ellipses = reso.calc_ellipses(covQhwInvVioExt21, verbose = True)
+    if printEllipse:
+        reso.plot_ellipses(ellipses, verbose = True)
+    l_vioext21_VS_coh_mod1.append( reso.calc_coh_fwhms(covQhwInvVioExt21) )
+    l_vioext21_VS_inc_mod1.append( reso.calc_incoh_fwhms(covQhwInvVioExt21) )
+
+    # 2e modele :
+    print('DEUXIEME MODELE')
+    VarDr = np.divide( np.square(Wr), 12 )
+    VarDx = np.square(np.cos(theta_f))*VarDr + np.square(Dr)*np.square(np.sin(theta_f))*VarDtheta
+    VarDy = np.square(np.sin(theta_f))*VarDr + np.square(Dr)*np.square(np.cos(theta_f))*VarDtheta
+    CovDxDy = np.cos(theta_f)*np.sin(theta_f) * ( VarDr - np.square(Dr)*VarDtheta )
+    Vartdref = np.divide( VarDr, np.square(v_f) )
+    a2 = np.divide(1, 12)
+    Vartp, Vartm, Vartd = a2*Vartpref, a2*Vartmref, Vartdref
+    VarPx, slopePx, distribPx = 1, 1, 'Trapeze' 
+    if wP < v_i*np.divide(thetaCP - thetaBP, 6*2*v_rot):
+        VarPx = np.divide(np.square(v_i)*( np.square(thetaCP) + np.square(thetaBP) ) - 2*wP*v_i*thetaCP*6*2*v_rot + np.square(wP)*np.square(6*2*v_rot), 12*np.square(6*2*v_rot))
+        slopePx = np.divide(np.square(6*2*v_rot), np.square(v_i)*thetaBP*thetaCP - wP*v_i*thetaBP*(6*2*v_rot))
+    else:
+        VarPx = np.divide( np.square(v_i*(thetaCP + thetaBP) - wP*6*2*v_rot), 24*np.square(6*2*v_rot) )
+        distribPx = 'Triangle'
+    VarPy, VarPz = VarPyref, VarPzref
+    VarMx, slopeMx, distribMx = 1, 1, 'Trapeze'
+    if wM < v_i*np.divide(thetaCM - thetaBM, 6*2*v_rot):
+        VarMx = np.divide(np.square(v_i)*( np.square(thetaCM) + np.square(thetaBM) ) - 2*wM*v_i*thetaCM*6*2*v_rot + np.square(wM)*np.square(6*2*v_rot), 12*np.square(6*2*v_rot))
+        slopeMx = np.divide(np.square(6*2*v_rot), np.square(v_i)*thetaBM*thetaCM - wM*v_i*thetaBM*(6*2*v_rot))
+    else :
+        VarMx = np.divide( np.square(v_i*(thetaCM + thetaBM) - wM*6*2*v_rot), 24*np.square(6*2*v_rot) )
+        distribMx = 'Triangle'
+    VarMy, VarMz = VarMyref, VarMzref
+    VarSx, VarSy, VarSz = VarSxref, VarSyref, VarSzref
+    LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vce21.length(Sr, Sh, Lpe, Lme, Les, Eyh, Ezh, -(Lpe+Les), VarPx, slopePx, distribPx, -(Lme+Les), VarMx, slopeMx, distribMx)
+    covInstr = vce21.covInstrument(VarPx, VarPy, VarPz, VarMx, VarMy, VarMz, VarSx, VarSy, VarSz, VarDx, VarDy, VarDz, Vartp, Vartm, Vartd, CovDxDy)
+    dict_la = {"L_PM":LPM, "L_PMx":LPMx, "L_PMy":LPMy, "L_PMz":LPMz, "L_MS":LMS, "L_MSx":LMSx, "L_MSy":LMSy, "L_MSz":LMSz, "L_SD":LSD, "L_SDx":LSDx, "L_SDy":LSDy, "L_SDz":LSDz}
+    shape = 'VCYL'
+    
+    covQhwVioExt21 = vce21.cov(v_i, v_f, dict_la, covInstr, shape, False)
+    covQhwInvVioExt21 = la.inv(covQhwVioExt21)
+    covQhwInvVioExt21 = np.dot(rot.T, np.dot(covQhwInvVioExt21, rot))
+
+    ellipses = reso.calc_ellipses(covQhwInvVioExt21, verbose = True)
+    if printEllipse:
+        reso.plot_ellipses(ellipses, verbose = True)
+    l_vioext21_VS_coh_mod2.append( reso.calc_coh_fwhms(covQhwInvVioExt21) )
+    l_vioext21_VS_inc_mod2.append( reso.calc_incoh_fwhms(covQhwInvVioExt21) )
 
 print('\n', 'VIO')
 print('modele 1 :', '  inc =', l_vio_inc_mod1, '        coh =', l_vio_coh_mod1)
@@ -533,6 +716,13 @@ print('modele 2 :', '  inc =', l_vioext2_VS_inc_mod2, '        coh =', l_vioext2
 print('modele 3 :', '  inc =', l_vioext2_VS_inc_mod3, '        coh =', l_vioext2_VS_coh_mod3)
 print('modele 4 :', '  inc =', l_vioext2_VS_inc_mod4, '        coh =', l_vioext2_VS_coh_mod4)
 
+print('\n', 'VIOEXT2_1 - POINT SAMPLE')
+print('modele 1 :', '  inc =', l_vioext21_PS_inc_mod1, '        coh =', l_vioext21_PS_coh_mod1)
+
+print('\n', 'VIOEXT2_1 - VOLUME SAMPLE')
+print('modele 1 :', '  inc =', l_vioext21_VS_inc_mod1, '        coh =', l_vioext21_VS_coh_mod1)
+print('modele 2 :', '  inc =', l_vioext21_VS_inc_mod2, '        coh =', l_vioext21_VS_coh_mod2)
+
 def savemodel(nomf, lQ, model):
     dltQpara, dltQperp, dltQup, dltE = [], [], [], []
     nbQ = len(lQ)
@@ -553,17 +743,17 @@ def savemodel(nomf, lQ, model):
 chemin = '/home/mecoli/Git/These/these_victor_tex/Biblio/TOF/IN5/Data/Mn-ac/model/'    # Mn-ac
 #Vio
 nomVio = chemin + 'Mn-ac_1p5K_{}A_VIO_inc.txt'.format(lbdi)
-savemodel(nomVio, l_Q, l_vio_inc_mod5)
+#savemodel(nomVio, l_Q, l_vio_inc_mod5)
 #Vioext
 nomVioext = chemin + 'Mn-ac_1p5K_{}A_VIOEXT_inc.txt'.format(lbdi)
-savemodel(nomVioext, l_Q, l_vioext_inc_mod4)
+#savemodel(nomVioext, l_Q, l_vioext_inc_mod4)
 # Vioext2-PS
 nomVioext2_PS = chemin + 'Mn-ac_1p5K_{}A_VIOEXT2_PS_inc.txt'.format(lbdi)
-savemodel(nomVioext2_PS, l_Q, l_vioext2_PS_inc_mod3)
+#savemodel(nomVioext2_PS, l_Q, l_vioext2_PS_inc_mod3)
 # Vioext2-VS
 nomVioext2_VS_DrSD = chemin + 'Mn-ac_1p5K_{}A_VIOEXT2_VS_dltDr=S+D_inc.txt'.format(lbdi)
-savemodel(nomVioext2_VS_DrSD, l_Q, l_vioext2_VS_inc_mod3)
+#savemodel(nomVioext2_VS_DrSD, l_Q, l_vioext2_VS_inc_mod3)
 nomVioext2_VS_DrD = chemin + 'Mn-ac_1p5K_{}A_VIOEXT2_VS_dltDr=D_inc.txt'.format(lbdi)
-savemodel(nomVioext2_VS_DrD, l_Q, l_vioext2_VS_inc_mod4)
+#savemodel(nomVioext2_VS_DrD, l_Q, l_vioext2_VS_inc_mod4)
 
 #savemodel('test.txt', l_Q, l_vio_coh_mod5)

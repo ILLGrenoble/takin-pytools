@@ -48,51 +48,103 @@ hbar = np.divide(h, 2*np.pi)
 covQhw = np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
 
 class trapeze_distribution(rv_continuous):
-    def __init__(self, a, b, c, d):
-        super().__init__(a=a, b=d)
-        self.a, self.b, self.c, self.d, self.J = a, b, c, d, np.divide(2, d + c - b - a)
+    def __init__(self, x0, x1, x2, x3):
+        super().__init__(a=x0, b=x3)
+        self.x0, self.x1, self.x2, self.x3, self.J = x0, x1, x2, x3, np.divide(2, x3 + x2 - x1 - x0)
 
     def _pdf(self, x):
-        if x < self.a or x > self.d:
+        if x < self.x0 or x >= self.x3:
             return 0
-        elif self.a <= x < self.b:
-            return np.divide(self.J * (x - self.a), (self.b - self.a))
-        elif self.b <= x <= self.c:
+        elif self.x0 <= x < self.x1:
+            return np.divide(self.J * (x - self.x0), (self.x1 - self.x0))
+        elif self.x1 <= x < self.x2:
             return self.J
-        else:
-            return np.divide(self.J*(self.d - x), (self.d - self.c))
+        elif self.x2 <= x < self.x3:
+            return np.divide(self.J*(self.x3 - x), (self.x3 - self.x2))
         
     def _cdf(self, x):
-        if x < self.a:
+        if x < self.x0:
             return 0
-        elif self.a <= x < self.b:
-            return np.divide(self.J*np.square(x - self.a), 2*(self.b - self.a))
-        elif self.b <= x < self.c:
-            return np.divide(self.J*(2*x - self.a - self.b), 2)
-        elif self.c <= x < self.d:
-            return np.divide(self.J*(np.square(self.c) + (self.a + self.b)*(self.d - self.c) - 2*self.d*x + np.square(x), 2*(self.c - self.d)))
-        else:
+        elif self.x0 <= x < self.x1:
+            return np.divide(self.J*np.square(x - self.x0), 2*(self.x1 - self.x0))
+        elif self.x1 <= x < self.x2:
+            return np.divide(self.J*(2*x - self.x0 - self.x1), 2)
+        elif self.x2 <= x <= self.x3:
+            return 1 - np.divide(self.J*np.square(self.x3 - x), 2*(self.x3 - self.x2))
+        elif self.x3 < x:
             return 1
         
-a, b, c, d = 0, 1, 3, 4
-ma_distribution = trapeze_distribution(a, b, c, d)
-print(ma_distribution.rvs())
+    def _ppf(self, q):
+        if q < 0 or q > 1:
+            return np.nan
+        elif 0 <= q <= np.divide(self.J*(self.x1 - self.x0), 2):
+            return self.x0 + np.sqrt(np.divide(2*q*(self.x1 - self.x0), self.J))
+        elif np.divide(self.J*(self.x1 - self.x0), 2) < q <= 1 - np.divide(self.J*(self.x3 - self.x2), 2):
+            return np.divide(q, self.J) + np.divide(self.x0 + self.x1, 2)
+        elif 1 - np.divide(self.J*(self.x3 - self.x2), 2) < q <= 1:
+            return self.x3 - np.sqrt(np.divide(2*(1 - q)*(self.x3 - self.x2), self.J))
 
-# Tirer un nombre aléatoirement selon cette densité
-moy = 0
-nb = 100
-for i in range(nb):
-    moy += ma_distribution.rvs()
-print(moy/nb)
+class triangle_distribution(rv_continuous):
+    def __init__(self, x0, x3):
+        super().__init__(a=x0, b=x3)
+        self.x0, self.x3, self.xm, self.J = x0, x3, np.divide(x0 + x3, 2), np.divide(2, x3 - x0)
 
+    def _pdf(self, x):
+        if x < self.x0 or x > self.x3:
+            return 0
+        elif self.x0 <= x < self.xm:
+            return np.divide(self.J * (x - self.x0), (self.xm - self.x0))
+        elif self.xm <= x <= self.x3:
+            return np.divide(self.J * (x - self.x3), (self.xm - self.x3))
+        
+    def _cdf(self, x):
+        if x < self.x0:
+            return 0
+        elif self.x0 <= x < self.xm:
+            return np.divide(self.J*np.square(x - self.x0), 2*(self.xm - self.x0))
+        elif self.xm <= x <= self.x3:
+            return 1 - np.divide(self.J*np.square(self.x3 - x), 2*(self.x3 - self.xm))
+        elif self.x3 < x:
+            return 1
+        
+    def _ppf(self, q):
+        if q < 0 or q > 1:
+            return np.nan
+        elif 0 <= q <= np.divide(self.J*(self.xm - self.x0), 2):
+            return self.x0 + np.sqrt(np.divide(2*q*(self.xm - self.x0), self.J))
+        elif 1 - np.divide(self.J*(self.x3 - self.xm), 2) < q <= 1:
+            return self.x3 - np.sqrt(np.divide(2*(1 - q)*(self.x3 - self.xm), self.J))
+
+def getx_trapeze(moy, var, slope):
+    x0 = moy - np.sqrt(np.divide(1 + 6*slope*var, 2*slope))
+    x1 = moy - np.sqrt(np.divide(np.square(moy)*slope - 2*moy*slope*x0 + slope*np.square(x0) - 1, slope))
+    x2, x3 = 2*moy - x1, 2*moy - x0
+    return (x0, x1, x2, x3)
+
+def getx_triangle(moy, var):
+    x0, x3 = moy - np.sqrt(6*var), moy + np.sqrt(6*var)
+    return (x0, x3)
 
 def k2v(k:float):
     return np.divide(k*np.square(m2A)*hbar, m_n)
 
-def length(radS:float, heiS:float, L_PE:float, L_ME:float, L_ES:float, wEy:float, wEz:float, moyPx:float, sigPx:float, moyMx:float, sigMx:float):
+def length(radS:float, heiS:float, L_PE:float, L_ME:float, L_ES:float, wEy:float, wEz:float, moyPx:float, varPx:float, slopePx:float, distrib_type_Px:str, moyMx:float, varMx:float, slopeMx:float, distrib_type_Mx:str):
     LPS, LPSx, LPSy, LPSz = 0, 0, 0, 0
     LMS, LMSx, LMSy, LMSz = 0, 0, 0, 0
     nb_pts = 100000
+    Px, Mx = moyPx, moyMx
+    if distrib_type_Px == 'Trapeze':
+        x0P, x1P, x2P, x3P = getx_trapeze(moyPx, varPx, slopePx)
+        distrib_Px = trapeze_distribution(x0P, x1P, x2P, x3P)
+    elif distrib_type_Px == 'Triangle':
+        x0P, x3P = getx_triangle(moyPx, varPx)
+        distrib_Px = triangle_distribution(x0P, x3P)
+    if distrib_type_Mx == 'Trapeze':
+        x0M, x1M, x2M, x3M = getx_trapeze(moyMx, varMx, slopeMx)
+        distrib_Mx = trapeze_distribution(x0M, x1M, x2M, x3M)
+    elif distrib_type_Mx == 'Triangle':
+        x0M, x3M = getx_triangle(moyMx, varMx)
+        distrib_Mx = triangle_distribution(x0M, x3M)
     for i in range(nb_pts):
         Sr, theta, Sz = radS*np.sqrt(np.random.uniform(0,1)), 2*np.pi*np.random.uniform(0,1), np.random.uniform(-heiS/2, heiS/2)
         Sx, Sy = Sr*np.cos(theta), Sr*np.sin(theta)
@@ -100,8 +152,8 @@ def length(radS:float, heiS:float, L_PE:float, L_ME:float, L_ES:float, wEy:float
         Pzmin, Pzmax = Sz + np.divide(L_PE + L_ES + Sx, L_ES + Sx)*(-wEz - Sz), Sz + np.divide(L_PE + L_ES + Sx, L_ES + Sx)*(wEz - Sz)
         Mymin, Mymax = Sy + np.divide(L_ME + L_ES + Sx, L_ES + Sx)*(-wEy - Sy), Sy + np.divide(L_ME + L_ES + Sx, L_ES + Sx)*(wEy - Sy)
         Mzmin, Mzmax = Sz + np.divide(L_ME + L_ES + Sx, L_ES + Sx)*(-wEz - Sz), Sz + np.divide(L_ME + L_ES + Sx, L_ES + Sx)*(wEz - Sz)
-        Px, Py, Pz = np.random.normal(moyPx, sigPx), np.random.uniform(Pymin, Pymax), np.random.uniform(Pzmin, Pzmax)
-        Mx, My, Mz = np.random.normal(moyMx, sigMx), np.random.uniform(Mymin, Mymax), np.random.uniform(Mzmin, Mzmax)
+        Px, Py, Pz = distrib_Px.rvs(), np.random.uniform(Pymin, Pymax), np.random.uniform(Pzmin, Pzmax)
+        Mx, My, Mz = distrib_Mx.rvs(), np.random.uniform(Mymin, Mymax), np.random.uniform(Mzmin, Mzmax)
         LPS += np.sqrt( np.square(Sx-Px) + np.square(Sy-Py) + np.square(Sz-Pz) )
         LPSx += Sx - Px
         LPSy += Sy - Py
@@ -231,3 +283,32 @@ def cov(v_i:float, v_f:float, dict_L:dict, cov_instr:np.array, shape='VCYL', ver
 
     return covQhw
 
+
+#a, b, c, d = 0, 2, 6, 8
+#ma_distribution = trapeze_distribution(a, b, c, d)
+#print(ma_distribution.rvs())
+
+#moy = 0
+#nb = 10000
+#mini, maxi = (a+d)/2, (a+d)/2
+#for i in range(nb):
+#    add = ma_distribution.rvs()
+#    if add < mini:
+#        mini = add
+#    if add > maxi:
+#        maxi = add
+#    moy += add
+#print(moy/nb, mini, maxi)
+
+#distrib = triangle_distribution(a,d)
+#print(distrib.rvs())
+#moy = 0
+#mini, maxi = (a+d)/2, (a+d)/2
+#for i in range(nb):
+#    add = distrib.rvs()
+#    if add < mini:
+#        mini = add
+#    if add > maxi:
+#        maxi = add
+#    moy += add
+#print(moy/nb, mini, maxi)
