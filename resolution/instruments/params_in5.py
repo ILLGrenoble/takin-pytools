@@ -60,7 +60,7 @@ IN5_NCB = {
     "width_chopper_M":6e7,
     "end_of_guide_y_height":14e7,
     "end_of_guide_z_height":54e7,
-    "distance_P_EG":9064e7,         #EG: end_of_guide
+    "distance_P_EG":9064.7e7,         #EG: end_of_guide
     "distance_M_EG":114.3e7,
     "distance_EG_S":17e7,
     "detector_radius":4000e7,
