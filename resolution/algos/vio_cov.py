@@ -189,9 +189,12 @@ def jacobTerms(v_i, v_f, l_dist, l_angles, l_AB, l_sizes, shape, verbose=False):
 
 # Getting parameters of choppers
 def getParamChopper(l_param_chopper, idx_rot=3):
-    '''l_param_chopper: [win_angle, min_rot_speed, max_rot_speed, rot_speed], idx_rot in {0, 1, 2, 3}'''
+    '''l_param_chopper: [win_angle, min_rot_speed, max_rot_speed, rot_speed, delta_t], idx_rot in {0, 1, 2, 3}'''
     win_angle, rot_speed = l_param_chopper[0], l_param_chopper[idx_rot]
-    return win_angle, rot_speed
+    if l_param_chopper[4] == 0:
+        return win_angle, rot_speed
+    else:
+        return l_param_chopper[4], 0.5
 
 # Storage of the given uncerntainty in a list
 def listDeltaGeo(list_param):
@@ -253,7 +256,7 @@ def covxiMatrix(deltas):
 
 def cov(param_geo, param_choppers, v_i, v_f, shape, verbose=False):
     """param_geo: {dist_PM:[PM1, sigma1, PM2, sigma2, ...], dist_MS:[MS1, sigma1, MS2, sigma2, ...], dist_SD:[ (if HCYL: x, sigma_x), radius, sigma_r, (if VCYL: z, sigma_z)], angles:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f, (if SPHERE: phi_f, sigma_phi_f)], delta_time_detector:value (0 by default)},
-    param_choppers: {chopperP:[window_angle, min_rot_speed, max_rot_speed, rot_speed], chopperM:[window_angle, min_rot_speed, max_rot_speed, rot_speed]},
+    param_choppers: {chopperP:[window_angle, min_rot_speed, max_rot_speed, rot_speed, delta_tp], chopperM:[window_angle, min_rot_speed, max_rot_speed, rot_speed, delta_tm]},
     v_i, v_f: velocity of the incident and scattered neutron,
     shape = 'SPHERE', 'VCYL', 'HCYL': shape of the detector (sphere, vertical cylinder or horizontal cylinder)"""
     # Calcul of distances and angles for each shape of detectors

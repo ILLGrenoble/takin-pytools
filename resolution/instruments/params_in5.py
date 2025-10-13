@@ -51,6 +51,24 @@ IN5 = {
     "delta_time_det":0
 }
 
+IN5_NCB = {
+    "windows_angle_chopper_P":9.0,
+    "beam_angle_chopper_P":8.5,
+    "width_chopper_P":12e7,
+    "windows_angle_chopper_M":3.25,
+    "beam_angle_chopper_M":3.0,
+    "width_chopper_M":6e7,
+    "end_of_guide_y_height":14e7,
+    "end_of_guide_z_height":54e7,
+    "distance_P_EG":9064.7e7,         #EG: end_of_guide
+    "distance_M_EG":114.3e7,
+    "distance_EG_S":17e7,
+    "detector_radius":4000e7,
+    "detector_height":3000e7,
+    "tube_diameter":26e7,
+    "det_shape":"VCYL",
+}
+
 
 # settings
 ki = 2*np.pi/5  # 2.5
