@@ -260,11 +260,32 @@ def calc(param):
     #    dana_effic *= (*param.ana_effic_curve)(param.kf)
 
 
+    # -------------------------------------------------------------------------
+    # same variance correction factors as in pop.py,
+    # included after discussion with M. Enderle
+    # -------------------------------------------------------------------------
+    mono_factor = np.sqrt(12.)/helpers.sig2fwhm
+    ana_factor = np.sqrt(12.)/helpers.sig2fwhm
+    if param["src_shape"] == "rectangular":
+        src_factor = np.sqrt(12.)/helpers.sig2fwhm
+    elif param["src_shape"] == "circular":
+        src_factor = np.sqrt(16.)/helpers.sig2fwhm
+    else:
+        raise ValueError("ResPy: No valid source shape given.")
+    if param["det_shape"] == "rectangular":
+        det_factor = np.sqrt(12.)/helpers.sig2fwhm
+    elif param["det_shape"] == "circular":
+        det_factor = np.sqrt(16.)/helpers.sig2fwhm
+    else:
+        raise ValueError("ResPy: No valid detector shape given.")
+    # -------------------------------------------------------------------------
+
+
     #--------------------------------------------------------------------------
     # mono part
     [A, B, C, D, dReflM] = get_mono_vals(
-        param["src_w"], param["src_h"],
-        param["mono_w"], param["mono_h"],
+        param["src_w"]/src_factor, param["src_h"]/src_factor,
+        param["mono_w"]/mono_factor, param["mono_h"]/mono_factor,
         param["dist_vsrc_mono"], param["dist_hsrc_mono"],
         param["dist_mono_sample"],
         ki, thetam,
@@ -286,8 +307,8 @@ def calc(param):
         sample_pos_kf = np.dot(T_vert, sample_pos_kf)
 
     [E, F, G, H, dReflA] = get_mono_vals(
-        param["det_w"], param["det_h"],
-        param["ana_w"], param["ana_h"],
+        param["det_w"]/det_factor, param["det_h"]/det_factor,
+        param["ana_w"]/ana_factor, param["ana_h"]/ana_factor,
         param["dist_ana_det"], param["dist_ana_det"],
         param["dist_sample_ana"],
         kf, -thetaa,

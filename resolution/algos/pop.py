@@ -341,8 +341,8 @@ def calc(param, pointlike = False):
     F[IDX_KF_H, IDX_KF_H] = 1. / param["ana_mosaic"]**2.
     F[IDX_KF_V, IDX_KF_V] = 1. / param["ana_mosaic_v"]**2.
 
-    # S matrix, [pop75], Appendices 2 and 3
-    S = np.zeros([NUM_POS, NUM_POS])
+    # -------------------------------------------------------------------------
+    # variance correction factors
     if param["src_shape"] == "rectangular":
         src_factor = 12.
     elif param["src_shape"] == "circular":
@@ -361,6 +361,11 @@ def calc(param, pointlike = False):
         det_factor = 16.
     else:
         raise ValueError("ResPy: No valid detector shape given.")
+    # -------------------------------------------------------------------------
+
+    # -------------------------------------------------------------------------
+    # S matrix, [pop75], Appendices 2 and 3
+    S = np.zeros([NUM_POS, NUM_POS])
 
     if not pointlike:
         S[IDX_SRC_Y, IDX_SRC_Y] = src_factor / param["src_w"]**2.
