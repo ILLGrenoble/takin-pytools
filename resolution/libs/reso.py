@@ -205,6 +205,8 @@ def calc_ellipses(Qres_Q, verbose = True):
 
         print("Eigenvalues: %s" % evals_4d)
         print("Eigensystem (Q_para [1/A], Q_perp [1/A], Q_up [1/A], E [meV]):\n%s" % rot_4d)
+        print("Note: To convert these eigenvalues to 1/A or meV (in fwhm), use: 1/sqrt(eval) * 2*sqrt(2*log(2)),")
+        print("      these correspond to the values given above (\"4d resolution ellipsoid principal axes fwhm lengths\").")
         print()
         print("Principal axes fwhms: %s" % fwhms)
         print("Coherent-elastic fwhms: %s" % fwhms_coh)
