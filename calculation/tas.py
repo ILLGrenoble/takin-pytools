@@ -1291,7 +1291,7 @@ def run_tas():
             driving = driving_time([da1, da2, da3, da4, da5, da6], \
                 [speeds[0], speeds[1], speeds[2], speeds[3], speeds[4], speeds[5]])
             print()
-            print("Instrument driving time from %s to %s: %.2f s" % (Q_rlu, -Q_rlu, driving))
+            print("Instrument driving time from %s to %s: %.2f s" % (Q_rlu1, Q_rlu2, driving))
 
 
 if __name__ == "__main__":
