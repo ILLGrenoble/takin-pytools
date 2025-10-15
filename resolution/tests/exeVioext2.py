@@ -96,7 +96,7 @@ l_Qc = [1.64, 1.66, 1.68, 1.70, 1.72, 1.74, 1.76, 1.78, 1.80, 1.82, 1.84, 1.86, 
 
 for Qc in l_Qc:
     print()
-    Q = np.sqrt(1 + 1 + np.square(Qc))
+    Q = np.sqrt(1 + 1 + np.square(Qc))*1.112
     print("Qc = ", Qc, " ; Q = ", Q)
     theta_f = tas.get_scattering_angle(k_i, k_f, Q)
 
