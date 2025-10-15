@@ -302,18 +302,18 @@ def get_E(ki, kf):
 #
 # get the difference in tas angles for two positions
 #
-def get_angle_deltas(ki1, kf1, Q_rlu1, di1, df1, \
-    ki2, kf2, Q_rlu2, di2, df2, \
+def get_angle_deltas(ki1, kf1, Q_rlu1, dm1, da1, \
+    ki2, kf2, Q_rlu2, dm2, da2, \
     orient_rlu, orient_up_rlu, B, sense_sample=1., a3_offs=np.pi):
 
     # position 1
-    [a1_1, a2_1] = get_mono_angle(ki1, di1)
-    [a5_1, a6_1] = get_mono_angle(kf1, df1)
+    [a1_1, a2_1] = get_mono_angle(ki1, dm1)
+    [a5_1, a6_1] = get_mono_angle(kf1, da1)
     [a3_1, a4_1, dist_Q_plane_1] = get_sample_angle(ki1, kf1, Q_rlu1, orient_rlu, orient_up_rlu, B, sense_sample, a3_offs)
 
     # position 2
-    [a1_2, a2_2] = get_mono_angle(ki2, di2)
-    [a5_2, a6_2] = get_mono_angle(kf2, df2)
+    [a1_2, a2_2] = get_mono_angle(ki2, dm2)
+    [a5_2, a6_2] = get_mono_angle(kf2, da2)
     [a3_2, a4_2, dist_Q_plane_2] = get_sample_angle(ki2, kf2, Q_rlu2, orient_rlu, orient_up_rlu, B, sense_sample, a3_offs)
 
     return [a1_2-a1_1, a2_2-a2_1, a3_2-a3_1, a4_2-a4_1, a5_2-a5_1, a6_2-a6_1, dist_Q_plane_1, dist_Q_plane_2]
@@ -1241,6 +1241,8 @@ def run_tas():
         # run gui
         gui = TasGUI()
     elif argv != None:
+        test_driving = True
+
         # run cli
         lattice = np.array([ argv.a, argv.b, argv.c ])
         angles = np.array([ argv.alpha, argv.beta, argv.gamma ]) / 180.*np.pi
@@ -1268,6 +1270,28 @@ def run_tas():
         print("Monochromator theta = %g deg, 2theta = %g deg" %(a1 / np.pi * 180., a2 / np.pi * 180.))
         print("Sample        theta = %g deg, 2theta = %g deg" %(a3 / np.pi * 180., a4 / np.pi * 180.))
         print("Analyser      theta = %g deg, 2theta = %g deg" %(a5 / np.pi * 180., a6 / np.pi * 180.))
+
+        if test_driving:
+            ki1 = ki
+            ki2 = ki
+            kf1 = kf
+            kf2 = kf
+            Q_rlu1 = Q_rlu
+            Q_rlu2 = -Q_rlu
+
+            a3_offs = np.pi
+            sense_sample = 1.
+
+            [da1, da2, da3, da4, da5, da6, dist1, dist2] = get_angle_deltas(\
+                ki1, kf1, Q_rlu1, argv.dm, argv.da, \
+                ki2, kf2, Q_rlu2, argv.dm, argv.da, \
+                orient1_rlu, orient3_rlu, B, sense_sample, a3_offs)
+
+            speeds = [ 0.15, 0.15, 1.25, 1.88, 1., 1. ]
+            driving = driving_time([da1, da2, da3, da4, da5, da6], \
+                [speeds[0], speeds[1], speeds[2], speeds[3], speeds[4], speeds[5]])
+            print()
+            print("Instrument driving time from %s to %s: %.2f s" % (Q_rlu, -Q_rlu, driving))
 
 
 if __name__ == "__main__":
