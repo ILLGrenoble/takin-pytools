@@ -1287,7 +1287,7 @@ def run_tas():
                 ki2, kf2, Q_rlu2, argv.dm, argv.da, \
                 orient1_rlu, orient3_rlu, B, sense_sample, a3_offs)
 
-            speeds = [ 0.15, 0.15, 1.25, 1.88, 1., 1. ]
+            speeds = np.array([ 0.15, 0.15, 1.25, 1.88, 1., 1. ]) / 180.*np.pi
             driving = driving_time([da1, da2, da3, da4, da5, da6], \
                 [speeds[0], speeds[1], speeds[2], speeds[3], speeds[4], speeds[5]])
             print()
