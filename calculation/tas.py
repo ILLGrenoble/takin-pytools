@@ -1272,10 +1272,12 @@ def run_tas():
         print("Analyser      theta = %g deg, 2theta = %g deg" %(a5 / np.pi * 180., a6 / np.pi * 180.))
 
         if test_driving:
-            ki1 = ki
-            ki2 = ki
+            E1 = E
+            E2 = E
             kf1 = kf
             kf2 = kf
+            ki1 = get_ki(kf1, E1)
+            ki2 = get_ki(kf2, E2)
             Q_rlu1 = Q_rlu
             Q_rlu2 = -Q_rlu
 
@@ -1291,7 +1293,7 @@ def run_tas():
             driving = driving_time([da1, da2, da3, da4, da5, da6], \
                 [speeds[0], speeds[1], speeds[2], speeds[3], speeds[4], speeds[5]])
             print()
-            print("Instrument driving time from %s to %s: %.2f s" % (Q_rlu1, Q_rlu2, driving))
+            print("Instrument driving time from %s and %.2f meV to %s and %.2f meV: %.2f s" % (Q_rlu1, E1, Q_rlu2, E2, driving))
 
 
 if __name__ == "__main__":
