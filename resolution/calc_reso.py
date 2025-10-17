@@ -487,23 +487,15 @@ if out_file != "":
 
         for i in range(0, 4):
             for j in range(0, 4):
-                print("\teigensys_%d%d = %g" % (i, j, ellipses["rot"][i][j]), file = file)
+                print("\teigensys_%d%d = %g" % (i, j, ellipses[0]["rot_4d"][i][j]), file = file)
         print("", file = file)
 
         for i in range(0, 4):
-            print("\teigenval_%d = %g" % (i, ellipses["evals"][i]), file = file)
+            print("\teigenval_%d = %g" % (i, ellipses[0]["evals_4d"][i]), file = file)
         print("", file = file)
 
         for i in range(0, 4):
-            print("\tfwhm_%d = %g" % (i, ellipses["fwhms"][i]), file = file)
-        print("", file = file)
-
-        for i in range(0, 4):
-            print("\tfwhm_coh_%d = %g" % (i, ellipses["fwhms_coh"][i]), file = file)
-        print("", file = file)
-
-        for i in range(0, 4):
-            print("\tfwhm_inc_%d = %g" % (i, ellipses["fwhms_inc"][i]), file = file)
+            print("\tfwhm_%d = %g" % (i, ellipses[0]["fwhms_4d"][i]), file = file)
         print("", file = file)
 
 

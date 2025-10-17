@@ -167,7 +167,7 @@ def descr_ellipse(quadric):
 #
 def calc_ellipses(Qres_Q, verbose = True):
     # 4d ellipsoid
-    [fwhms_4d, angles_4d, rot_4d, evals_4d] = descr_ellipse(Qres_Q)
+    [fwhms_4d, _angles_4d, rot_4d, evals_4d] = descr_ellipse(Qres_Q)
 
     axes_to_delete = [ [2, 1], [2, 0], [1, 0], [3, 2] ]
     slice_first = [ True, True, True, False ]
@@ -191,7 +191,7 @@ def calc_ellipses(Qres_Q, verbose = True):
         results.append({
             "fwhms" : fwhms, "angles" : angles, "rot" : rot, "evals" : evals,
             "fwhms_proj" : fwhms_proj, "angles_proj" : angles_proj, "rot_proj" : rot_proj, "evals_proj" : evals_proj,
-            "fwhms_4d" : fwhms_4d, "angles_4d" : angles_4d, "rot_4d" : rot_4d, "evals_4d" : evals_4d, })
+            "fwhms_4d" : fwhms_4d, "rot_4d" : rot_4d, "evals_4d" : evals_4d, })
 
     if verbose:
         print()
