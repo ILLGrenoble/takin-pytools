@@ -317,6 +317,7 @@ def calc(param):
         param["ana_mosaic"], param["ana_mosaic_v"],
         inv_ana_curv_h, inv_ana_curv_v,
         sample_pos_kf, dana_effic)
+    F = -F  # thanks to M. Enderle for pointing this out
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
