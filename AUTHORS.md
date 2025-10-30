@@ -11,15 +11,23 @@ PRINCIPAL AUTHOR
 CONTRIBUTORS
 ------------
 
+**Mechthild Enderle**
+  - mail: enderle\<AT\>ill.fr
+  - active: 2025
+  - contributions:
+    - derivation of the extended Eckold resolution method
+    - some fixes to the Python code
+
+
 **Victor Mecoli**
   - mail: mecoli\<AT\>ill.fr
   - active: 2025
   - contributions:
-    - Python implementation of an extended Violini resolution method.
+    - derivation and Python implementation of the extended Violini resolution method
 
 
 **Gabriel Rebolini**
   - mail: rebolinig\<AT\>ill.fr
   - active: april-june 2025 for an internship
   - contributions:
-    - improvements for nxsprint.py.
+    - improvements for nxsprint.py
