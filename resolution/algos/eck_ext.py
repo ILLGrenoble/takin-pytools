@@ -397,8 +397,7 @@ def calc(param):
     mos_v_Q_sq = (param["sample_mosaic_v"] * Q)**2.
 
     # sample mosaic, gives the same as equ. 4.3 in [end25]
-    M = np.delete(np.delete(U, 3, axis = 0), 3, axis = 1)
-    M = np.delete(np.delete(M, 0, axis = 0), 0, axis = 1)
+    M = np.copy(U[1:3, 1:3])
     # careful: 0.5 from factor -0.5*... missing in U matrix compared to normal gaussian!
     M += np.diag([0.5*helpers.sig2fwhm**2. / mos_Q_sq, 0.5*helpers.sig2fwhm**2. / mos_v_Q_sq ])
 

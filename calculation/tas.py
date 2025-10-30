@@ -1241,9 +1241,9 @@ def run_tas():
         # run gui
         gui = TasGUI()
     elif argv != None:
+        # run cli
         test_driving = True
 
-        # run cli
         lattice = np.array([ argv.a, argv.b, argv.c ])
         angles = np.array([ argv.alpha, argv.beta, argv.gamma ]) / 180.*np.pi
         B = get_B(lattice, angles)
@@ -1293,7 +1293,8 @@ def run_tas():
             driving = driving_time([da1, da2, da3, da4, da5, da6], \
                 [speeds[0], speeds[1], speeds[2], speeds[3], speeds[4], speeds[5]])
             print()
-            print("Instrument driving time from %s and %.2f meV to %s and %.2f meV: %.2f s" % (Q_rlu1, E1, Q_rlu2, E2, driving))
+            print("Instrument driving time from %s and %.2f meV to %s and %.2f meV: %.2f s"
+                % (Q_rlu1, E1, Q_rlu2, E2, driving))
 
 
 if __name__ == "__main__":
