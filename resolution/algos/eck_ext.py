@@ -397,20 +397,20 @@ def calc(param):
     mos_v_Q_sq = (param["sample_mosaic_v"] * Q)**2.
 
     # sample mosaic, gives the same as equ. 4.3 in [end25]
-    M = np.copy(U[1:3, 1:3])
+    mosaic = np.copy(U[1:3, 1:3])
     # careful: 0.5 from factor -0.5*... missing in U matrix compared to normal gaussian!
-    M += np.diag([0.5*helpers.sig2fwhm**2. / mos_Q_sq, 0.5*helpers.sig2fwhm**2. / mos_v_Q_sq ])
+    mosaic += np.diag([0.5*helpers.sig2fwhm**2. / mos_Q_sq, 0.5*helpers.sig2fwhm**2. / mos_v_Q_sq ])
+    inv_mosaic = la.inv(mosaic)
 
     # equ. 4.4 in [end25]
-    R0 *= np.pi**2. / np.sqrt(la.det(M))
+    R0 *= np.pi**2. / np.sqrt(la.det(mosaic))
     R0 *= helpers.sig2fwhm / np.sqrt(2. * np.pi * mos_Q_sq * mos_v_Q_sq)
 
     # equ. 4.5-4.7 in [end25]
-    invM = la.inv(M)
     P12 = matP[1:3, :]
     U12 = U[1:3, :]
-    U12invM = np.dot(np.transpose(U12), invM)
-    P12invM = np.dot(np.transpose(P12), invM)
+    P12invM = np.dot(np.transpose(P12), inv_mosaic)
+    U12invM = np.dot(np.transpose(U12), inv_mosaic)
     matK -= 0.25 * np.dot(P12invM, P12)
     matP -= np.dot(U12invM, P12)
     U -= np.dot(U12invM, U12)
