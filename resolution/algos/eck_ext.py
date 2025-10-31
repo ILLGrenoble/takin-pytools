@@ -434,21 +434,39 @@ def calc(param):
             [0., 0., 1.]])
 
         T_E = np.dot(Dtheta, np.dot(basis_ki, sample_axes))
+        evalsK = la.eigvals(matK)
 
         # careful: factor -0.5*... missing in U matrix compared to normal gaussian!
         if param["sample_shape"] == "spherical":
             # spherical sample integration, equ. 5.9 in [end25]
             matN = matK + np.dot(T_E, np.dot(
                 10./sample_dims**2., np.transpose(T_E)))
+
+            # equ. 5.7 in [end25]
+            if not all((sample_dims*0.5)**2. * (3./(4.*np.pi))**(-2./3.) <= 6./evalsK):
+                print("WARNING: Spherical sample approximation outside limit.")
+
         elif param["sample_shape"] == "cylindrical":
             # cylindrical sample integration, equ. 5.13 in [end25]
             matN = matK + np.dot(T_E, np.dot(np.diag([
                 8./sample_dims[0]**2.,
                 8./sample_dims[1]**2.,
                 6./sample_dims[2]**2. ]), np.transpose(T_E)))
+
+            # equ. 5.12 in [end25]
+            # TODO: check order of eigenvalues and test lengths individually instead of volume
+            if (sample_dims[0]*0.5)**2. * np.pi \
+                * (sample_dims[1]*0.5)**2. * np.pi \
+                * sample_dims[2]**2. \
+                > 6.*6.*6./(evalsK[0] * evalsK[1] * evalsK[2]):
+                print("WARNING: Cylindrical sample approximation outside limit.")
         elif param["sample_shape"] == "cuboid":
             # cuboid sample integration, equ. 5.?? in [end25]
             matN = matK + np.dot(T_E, np.dot(6./sample_dims**2., np.transpose(T_E)))
+
+            # equ. 5.7 in [end25]
+            if not all(sample_dims**2. <= 6./evalsK):
+                print("WARNING: Cubic sample approximation outside limit.")
         else:
             raise ValueError("ResPy: No valid sample shape given.")
 
