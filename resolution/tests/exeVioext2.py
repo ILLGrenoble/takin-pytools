@@ -38,19 +38,23 @@ import libs.helpers as helpers
 import algos.vio_cov_ext2 as vce2
 
 
-lbdi = 3.2
-lbdf = 2.132495017234745 #E = -10meV
+#lbdi = 3.2
+#lbdf = 2.132495017234745 #E = -10meV
+lbdi = 4
+lbdf = 4
+
 k_i = 2*np.pi/lbdi
 k_f = 2*np.pi/lbdf
 v_i = vce2.k2v(k_i)
 v_f = vce2.k2v(k_f)
 
-v_rot = 2*12000
+#v_rot = 2*12000
+v_rot = 2*16000
 
 # Sample:
 #Sr, Sh = 4e7, 50e7 #5e7, 50e7 #Mn-ac
 #Sr, Sh = 6e7, 60e7 #Vanadium
-Sr, Sh = 0.0001e7, 0.0001e7
+Sr, Sh = 0.1e7, 0.1e7
 
 # Instrument:
 thetaCP, thetaBP, wP = 9.0, 8.5, 12e7
@@ -68,7 +72,7 @@ VarPy = ( np.divide(np.square(Eyh), 3)
         + np.square(Lpe)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
         + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
         + np.divide(2*np.square(Lpe), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
-VarPz = ( np.divide(np.square(Ezh), 3)
+VarPz = np.divide(1, 10) * ( np.divide(np.square(Ezh), 3)
         + np.divide(np.square(Lpe), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
         + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
 VarMx = np.square( v_i*np.sqrt(Vartm) - wM )
@@ -76,7 +80,7 @@ VarMy = ( np.divide(np.square(Eyh), 3)
         + np.square(Lme)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
         + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
         + np.divide(2*np.square(Lme), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
-VarMz = ( np.divide(np.square(Ezh), 3)
+VarMz = np.divide(1, 10) * ( np.divide(np.square(Ezh), 3)
         + np.divide(np.square(Lme), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
         + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
 VarSx, VarSy, VarSz = np.divide(np.square(Sr), 4), np.divide(np.square(Sr), 4), np.divide(np.square(Sh), 12)
@@ -87,16 +91,18 @@ covInstr = np.eye(15)
 for i in range(15):
     covInstr[i][i] = Var[i]
 
+print(VarPx, VarMx)
+
 sigPx = np.sqrt(VarPx)
 sigMx = np.sqrt(VarMx)
 LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vce2.length(Sr, Sh, Lpe, Lme, Les, Eyh, Ezh, -(Lpe+Les), sigPx, -(Lme+Les), sigMx)
 LSD, LSDz = Dr, 0
 
-l_Qc = [1.64, 1.66, 1.68, 1.70, 1.72, 1.74, 1.76, 1.78, 1.80, 1.82, 1.84, 1.86, 1.88, 1.90, 1.92, 1.94, 1.96, 1.98, 2.00, 2.02, 2.04, 2.06, 2.08, 2.10, 2.12, 2.14, 2.16, 2.18, 2.20, 2.22, 2.24, 2.26, 2.28, 2.30, 2.32, 2.34, 2.36]
-
+#l_Qc = [1.64, 1.66, 1.68, 1.70, 1.72, 1.74, 1.76, 1.78, 1.80, 1.82, 1.84, 1.86, 1.88, 1.90, 1.92, 1.94, 1.96, 1.98, 2.00, 2.02, 2.04, 2.06, 2.08, 2.10, 2.12, 2.14, 2.16, 2.18, 2.20, 2.22, 2.24, 2.26, 2.28, 2.30, 2.32, 2.34, 2.36]
+l_Qc = [1]
 for Qc in l_Qc:
     print()
-    Q = np.sqrt(1 + 1 + np.square(Qc))*1.112
+    Q = np.sqrt(0 + 1 + np.square(Qc))
     print("Qc = ", Qc, " ; Q = ", Q)
     theta_f = tas.get_scattering_angle(k_i, k_f, Q)
 
