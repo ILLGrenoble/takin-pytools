@@ -42,6 +42,8 @@ import algos.vio_cov_ext2 as vce2
 #lbdf = 2.132495017234745 #E = -10meV
 lbdi = 4
 lbdf = 4
+#lbdi = 2
+#lbdf = 2
 
 k_i = 2*np.pi/lbdi
 k_f = 2*np.pi/lbdf
