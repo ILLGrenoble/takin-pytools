@@ -30,13 +30,15 @@
 import sys
 import os
 sys.path.append(os.path.dirname(__file__) + "/..")
+sys.path.append(os.path.dirname(__file__) + "/../..")
 
 import numpy as np
 import numpy.linalg as la
-import libs.tas as tas
+import calculation.tas as tas
 import libs.helpers as helpers
 import algos.vio_cov_ext2 as vce2
 
+nb=0.000941
 
 #lbdi = 3.2
 #lbdf = 2.132495017234745 #E = -10meV
@@ -54,11 +56,14 @@ v_f = vce2.k2v(k_f)
 v_rot = 2*16000
 
 # Sample:
-#Sr, Sh = 4e7, 50e7 #5e7, 50e7 #Mn-ac
+Sr, Sh = 4e7, 50e7 #5e7, 50e7 #Mn-ac
 #Sr, Sh = 6e7, 60e7 #Vanadium
-Sr, Sh = 0.1e7, 0.1e7
+#Sr, Sh = 0.1e7, 0.1e7
 
 # Instrument:
+M = 3.5
+thetacrit = M*np.arcsin(lbdi/10*np.sqrt(nb/np.pi))
+
 thetaCP, thetaBP, wP = 9.0, 8.5, 12e7
 thetaCM, thetaBM, wM = 3.25, 3.0, 6e7
 Eyh, Ezh, Lpe, Lme, Les = 7e7, 27e7, 9064.7e7, 1114.3e7, 170e7
@@ -74,17 +79,19 @@ VarPy = ( np.divide(np.square(Eyh), 3)
         + np.square(Lpe)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
         + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
         + np.divide(2*np.square(Lpe), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
-VarPz = np.divide(1, 10) * ( np.divide(np.square(Ezh), 3)
-        + np.divide(np.square(Lpe), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
-        + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
+#VarPz = np.divide(1, 10) * ( np.divide(np.square(Ezh), 3)
+#        + np.divide(np.square(Lpe), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
+#        + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
+VarPz = np.divide(1,12) * ( np.square(Sh) + (4*np.square(Lpe + Les) + np.square(Sr))*np.square(np.tan(thetacrit)) )
 VarMx = np.square( v_i*np.sqrt(Vartm) - wM )
 VarMy = ( np.divide(np.square(Eyh), 3)
         + np.square(Lme)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
         + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
         + np.divide(2*np.square(Lme), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
-VarMz = np.divide(1, 10) * ( np.divide(np.square(Ezh), 3)
-        + np.divide(np.square(Lme), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
-        + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
+#VarMz = np.divide(1, 10) * ( np.divide(np.square(Ezh), 3)
+#        + np.divide(np.square(Lme), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
+#        + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
+VarMz = np.divide(1,12) * ( np.square(Sh) + (4*np.square(Lme + Les) + np.square(Sr))*np.square(np.tan(thetacrit)) )
 VarSx, VarSy, VarSz = np.divide(np.square(Sr), 4), np.divide(np.square(Sr), 4), np.divide(np.square(Sh), 12)
 VarDz = np.divide(1, 12) * np.square(np.divide(Hdet, 100))
 Var = [VarPx, VarPy, VarPz, VarMx, VarMy, VarMz, VarSx, VarSy, VarSz, 1, 1, VarDz, Vartp, Vartm, Vartd]
