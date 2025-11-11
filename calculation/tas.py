@@ -6,6 +6,10 @@
 # @license see 'LICENSE' file
 #
 
+
+# -----------------------------------------------------------------------------
+# imports
+# -----------------------------------------------------------------------------
 import sys
 
 try:
@@ -15,7 +19,21 @@ except ImportError:
     print("Numpy could not be imported!")
     exit(-1)
 
-use_scipy = False
+try:
+    import scipy as sp
+    import scipy.constants as co
+
+    # calculate constants
+    hbar_in_meVs = co.Planck/co.elementary_charge*1000./2./np.pi
+    E_to_k2 = 2.*co.neutron_mass/hbar_in_meVs**2. / co.elementary_charge*1000. * 1e-20
+except ImportError:
+    #print("Scipy could not be imported!")
+
+    # calculated with scipy, using the formula above
+    E_to_k2 = 0.482596423544
+
+k2_to_E = 1./E_to_k2
+# -----------------------------------------------------------------------------
 
 
 
@@ -92,24 +110,6 @@ def angle(a, b, metric):
         c = -1.
 
     return np.arccos(c)
-# -----------------------------------------------------------------------------
-
-
-# -----------------------------------------------------------------------------
-if use_scipy:
-    try:
-        import scipy as sp
-        import scipy.constants as co
-    except ImportError:
-        print("Scipy could not be imported!")
-        exit(-1)
-
-    hbar_in_meVs = co.Planck/co.elementary_charge*1000./2./np.pi
-    E_to_k2 = 2.*co.neutron_mass/hbar_in_meVs**2. / co.elementary_charge*1000. * 1e-20
-else:
-    E_to_k2 = 0.482596423544    # calculated with scipy, using the formula above
-
-k2_to_E = 1./E_to_k2
 # -----------------------------------------------------------------------------
 
 
