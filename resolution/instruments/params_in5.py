@@ -52,6 +52,8 @@ IN5 = {
 }
 
 IN5_NCB = {
+    "M_coating":3.5,
+    "n_b":0.000941,
     "windows_angle_chopper_P":9.0,
     "beam_angle_chopper_P":8.5,
     "width_chopper_P":12e7,
