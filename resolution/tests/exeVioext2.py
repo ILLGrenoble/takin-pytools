@@ -76,11 +76,13 @@ print(np.sqrt(VarDtheta), 'Hcrit/max =', Hcrit/(1e7), Hmax/(1e7))
 
 Vartp, Vartm, Vartd = np.divide( np.square(thetaCP) + np.square(thetaBP), 12*np.square(6*v_rot) ), np.divide( np.square(thetaCM) + np.square(thetaBM), 12*np.square(6*v_rot) ), np.divide( VarDr, np.square(v_f) )
 VarPx = np.square( v_i*np.sqrt(Vartp) - wP )
-VarPy = np.divide(1,12)*( 3*np.square(Sr) + (4*np.square(Lpe + Les) + np.square(Sr))*np.tan(thetacrit) )
+VarPy = np.divide(1,12)*( 3*np.square(Sr) + (4*np.square(Lpe + Les) + np.square(Sr))*np.square(np.tan(thetacrit)) )
 VarPz = 1
 if Sh/2 <= Hcrit:
+    print("Simple 1")
     VarPz = np.divide(1,12) * ( np.square(Sh) + (4*np.square(Lpe + Les) + np.square(Sr))*np.square(np.tan(thetacrit)) )
 elif Hcrit < Sh/2 < Hmax:
+    print("un peu grand 1")
     VarPz = np.divide(1, 36*Sh) * ( np.divide(1, np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr)))*(Sh - 2*Hcrit)*(
         (3*np.square(Hcrit) + np.square(Hcrit + Sh))*(2*Lpe*(np.square(Les) - np.square(Sr) + Lpe*Les) - np.sqrt(np.square(Les) - np.square(Sr))*(2*np.square(Lpe) - np.square(Sr) + 2*Lpe*Les))
         + 3*Ezh*(Sh + 2*Hcrit)*(2*Lpe*(np.square(Les) - np.square(Sr) - 2*Lpe*Les) + np.sqrt(np.square(Les) - np.square(Sr))*(4*np.square(Lpe) + np.square(Sr) - 2*Lpe*Les))
@@ -90,6 +92,7 @@ elif Hcrit < Sh/2 < Hmax:
         + 3*np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr))*(np.square(2*Lpe + 2*Les)+np.square(Sr))*np.square(np.tan(thetacrit)))
     + 6*(4*np.power(Hcrit, 3) + Hcrit*(4*np.square(Lpe + Les) + np.square(Sr))*np.square(np.tan(thetacrit))))
 else:
+    print("trop grand 1")
     VarPz = np.divide(1, 18*Sh) * ( np.divide(1, np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr)))*(Hmax - Hcrit)*(
         (3*np.square(Hcrit) + np.square(Hcrit + 2*Hmax))*(2*Lpe*(np.square(Les) - np.square(Sr) + Lpe*Les) - np.sqrt(np.square(Les) - np.square(Sr))*(2*np.square(Lpe) - np.square(Sr) + 2*Lpe*Les))
         + 3*Ezh*(2*Hmax + 2*Hcrit)*(2*Lpe*(np.square(Les) - np.square(Sr) - 2*Lpe*Les) + np.sqrt(np.square(Les) - np.square(Sr))*(4*np.square(Lpe) + np.square(Sr) - 2*Lpe*Les))
@@ -99,11 +102,13 @@ else:
         + 3*np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr))*(np.square(2*Lpe + 2*Les)+np.square(Sr))*np.square(np.tan(thetacrit)))
     + 3*(4*np.power(Hcrit, 3) + Hcrit*(4*np.square(Lpe + Les) + np.square(Sr))*np.square(np.tan(thetacrit))))
 VarMx = np.square( v_i*np.sqrt(Vartm) - wM )
-VarMy = np.divide(1,12)*( 3*np.square(Sr) + (4*np.square(Lme + Les) + np.square(Sr))*np.tan(thetacrit) )
+VarMy = np.divide(1,12)*( 3*np.square(Sr) + (4*np.square(Lme + Les) + np.square(Sr))*np.square(np.tan(thetacrit)) )
 VarMz = 1
 if Sh/2 <= Hcrit:
     VarMz = np.divide(1,12) * ( np.square(Sh) + (4*np.square(Lme + Les) + np.square(Sr))*np.square(np.tan(thetacrit)) )
+    print("Simple 2")
 elif Hcrit < Sh/2 < Hmax:
+    print("un peu grand 2")
     VarMz = np.divide(1, 36*Sh) * ( np.divide(1, np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr)))*(Sh - 2*Hcrit)*(
         (3*np.square(Hcrit) + np.square(Hcrit + Sh))*(2*Lme*(np.square(Les) - np.square(Sr) + Lme*Les) - np.sqrt(np.square(Les) - np.square(Sr))*(2*np.square(Lme) - np.square(Sr) + 2*Lme*Les))
         + 3*Ezh*(Sh + 2*Hcrit)*(2*Lme*(np.square(Les) - np.square(Sr) - 2*Lme*Les) + np.sqrt(np.square(Les) - np.square(Sr))*(4*np.square(Lme) + np.square(Sr) - 2*Lme*Les))
@@ -113,6 +118,7 @@ elif Hcrit < Sh/2 < Hmax:
         + 3*np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr))*(np.square(2*Lme + 2*Les)+np.square(Sr))*np.square(np.tan(thetacrit)))
     + 6*(4*np.power(Hcrit, 3) + Hcrit*(4*np.square(Lme + Les) + np.square(Sr))*np.square(np.tan(thetacrit))))
 else:
+    print("trop grand 2")
     VarMz = np.divide(1, 18*Sh) * ( np.divide(1, np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr)))*(Hmax - Hcrit)*(
         (3*np.square(Hcrit) + np.square(Hcrit + 2*Hmax))*(2*Lme*(np.square(Les) - np.square(Sr) + Lme*Les) - np.sqrt(np.square(Les) - np.square(Sr))*(2*np.square(Lme) - np.square(Sr) + 2*Lme*Les))
         + 3*Ezh*(2*Hmax + 2*Hcrit)*(2*Lme*(np.square(Les) - np.square(Sr) - 2*Lme*Les) + np.sqrt(np.square(Les) - np.square(Sr))*(4*np.square(Lme) + np.square(Sr) - 2*Lme*Les))
@@ -122,7 +128,7 @@ else:
         + 3*np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr))*(np.square(2*Lme + 2*Les)+np.square(Sr))*np.square(np.tan(thetacrit)))
     + 3*(4*np.power(Hcrit, 3) + Hcrit*(4*np.square(Lme + Les) + np.square(Sr))*np.square(np.tan(thetacrit))))
 VarSx, VarSy, VarSz = np.divide(np.square(Sr), 4), np.divide(np.square(Sr), 4), np.divide(np.square(Sh), 12)
-VarDz = np.divide(1, 12) * np.square(np.divide(Hdet, 100))
+VarDz = np.divide(1, 1) * np.square(np.divide(Hdet, 100))
 Var = [VarPx, VarPy, VarPz, VarMx, VarMy, VarMz, VarSx, VarSy, VarSz, 1, 1, VarDz, Vartp, Vartm, Vartd]
 
 covInstr = np.eye(15)
@@ -137,7 +143,7 @@ LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vce2.length(Sr, Sh, Lpe, Lme, Les
 LSD, LSDz = Dr, 0
 
 #l_Qc = [1.64, 1.66, 1.68, 1.70, 1.72, 1.74, 1.76, 1.78, 1.80, 1.82, 1.84, 1.86, 1.88, 1.90, 1.92, 1.94, 1.96, 1.98, 2.00, 2.02, 2.04, 2.06, 2.08, 2.10, 2.12, 2.14, 2.16, 2.18, 2.20, 2.22, 2.24, 2.26, 2.28, 2.30, 2.32, 2.34, 2.36]
-l_Qc = [1]
+l_Qc = [0]
 for Qc in l_Qc:
     print()
     Q = np.sqrt(0 + 1 + np.square(Qc))
