@@ -168,6 +168,7 @@ def calc(param):
 
     # --------------------------------------------------------------------
     # mono/ana focus
+    # --------------------------------------------------------------------
     # use fixed values
     mono_curv_h = param["mono_curv_h"]
     mono_curv_v = param["mono_curv_v"]
@@ -283,6 +284,7 @@ def calc(param):
 
     #--------------------------------------------------------------------------
     # mono part
+    # --------------------------------------------------------------------
     [A, B, C, D, dReflM] = get_mono_vals(
         param["src_w"]/src_factor, param["src_h"]/src_factor,
         param["mono_w"]/mono_factor, param["mono_h"]/mono_factor,
@@ -299,6 +301,7 @@ def calc(param):
 
     #--------------------------------------------------------------------------
     # ana part, equ. 43 in [eck14]
+    # --------------------------------------------------------------------
     sample_pos_kf = np.dot(helpers.rotation_matrix_nd(-twotheta, 3), sample_pos)
 
     # vertical scattering in kf axis, formula from [eck20]
@@ -317,6 +320,7 @@ def calc(param):
         param["ana_mosaic"], param["ana_mosaic_v"],
         inv_ana_curv_h, inv_ana_curv_v,
         sample_pos_kf, dana_effic)
+    F = -F  # thanks to M. Enderle for pointing this out
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
@@ -367,7 +371,7 @@ def calc(param):
 
     # --------------------------------------------------------------------------
     # integrate last 2 vars -> equs. 57 & 58 in [eck14]
-
+    # --------------------------------------------------------------------
     U2 = reso.quadric_proj(U1, 5)
     # careful: factor -0.5*... missing in U matrix compared to normal gaussian!
     U = 2. * reso.quadric_proj(U2, 4)
@@ -386,6 +390,7 @@ def calc(param):
 
     # --------------------------------------------------------------------------
     # include sample mosaic, see cn.cpp
+    # --------------------------------------------------------------------
     # add horizontal sample mosaic
     mos_Q_sq = (param["sample_mosaic"] * Q)**2.
     vec1 = U[:, 1] / helpers.sig2fwhm**2.

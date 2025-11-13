@@ -309,6 +309,7 @@ def calc(param):
         param["coll_v_post_ana"], param["coll_v_post_sample"],
         param["ana_mosaic"], param["ana_mosaic_v"],
         inv_ana_curv_h, inv_ana_curv_v, dana_effic)
+    F = -F  # thanks to M. Enderle for pointing this out
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
@@ -368,8 +369,7 @@ def calc(param):
     # integrate last 2 vars -> equs. 57 & 58 in [eck14]
     # --------------------------------------------------------------------------
     U2 = reso.quadric_proj(U1, 5)
-    # careful: factor -0.5*... missing in U matrix compared to normal gaussian!
-    U = 2. * reso.quadric_proj(U2, 4)
+    U = reso.quadric_proj(U2, 4)
 
     # P matrix from equ. 2.21 in [end25]
     # quadric_proj_mat() gives the same as equ. 2.21 in [end25]
@@ -397,37 +397,23 @@ def calc(param):
     mos_v_Q_sq = (param["sample_mosaic_v"] * Q)**2.
 
     # sample mosaic, gives the same as equ. 4.3 in [end25]
-    M = np.delete(np.delete(U, 3, axis = 0), 3, axis = 1)
-    M = np.delete(np.delete(M, 0, axis = 0), 0, axis = 1)
-    M += np.diag([ helpers.sig2fwhm**2. / mos_Q_sq, helpers.sig2fwhm**2. / mos_v_Q_sq ])
-    #Madj = helpers.adjugate(M)
+    mosaic = np.copy(U[1:3, 1:3])
+    # careful: 0.5 from factor -0.5*... missing in U matrix compared to normal gaussian!
+    mosaic += np.diag([0.5*helpers.sig2fwhm**2. / mos_Q_sq, 0.5*helpers.sig2fwhm**2. / mos_v_Q_sq ])
+    inv_mosaic = la.inv(mosaic)
 
     # equ. 4.4 in [end25]
-    R0 *= np.pi**2. / np.sqrt(la.det(M))
+    R0 *= np.pi**2. / np.sqrt(la.det(mosaic))
     R0 *= helpers.sig2fwhm / np.sqrt(2. * np.pi * mos_Q_sq * mos_v_Q_sq)
 
-
-    #Uorg = np.copy(U)
-    Pvec1 = matP[1, :] / helpers.sig2fwhm**2.
-    Uvec1 = U[:, 1] / helpers.sig2fwhm**2.
-    Mnorm1 = 1./mos_Q_sq + U[1, 1]/helpers.sig2fwhm**2.
-    # gives the same as equ. 4.5 in [end25]
-    matK -= 0.25 * helpers.sig2fwhm**2. * np.outer(Pvec1, Pvec1) / Mnorm1
-    # gives the same as equ. 4.7 in [end25]
-    matP -= helpers.sig2fwhm**2. * np.outer(Uvec1, Pvec1) / Mnorm1
-    # gives the same as equ. 4.6 in [end25]
-    U -= helpers.sig2fwhm**2. * np.outer(Uvec1, Uvec1) / Mnorm1
-
-    Pvec2 = matP[2, :] / helpers.sig2fwhm**2.
-    Uvec2 = U[:, 2] / helpers.sig2fwhm**2.
-    Mnorm2 = 1./mos_v_Q_sq + U[2, 2]/helpers.sig2fwhm**2.
-    # gives the same as equ. 4.5 in [end25]
-    matK -= 0.25 * helpers.sig2fwhm**2. * np.outer(Pvec2, Pvec2) / Mnorm2
-    # gives the same as equ. 4.7 in [end25]
-    matP -= helpers.sig2fwhm**2. * np.outer(Uvec2, Pvec2) / Mnorm2
-    # gives the same as equ. 4.6 in [end25]
-    U -= helpers.sig2fwhm**2. * np.outer(Uvec2, Uvec2) / Mnorm2
-    #print("Mosaic R0 scaling: %g" % (np.sqrt(la.det(Uorg) / la.det(U))))
+    # equ. 4.5-4.7 in [end25]
+    P12 = matP[1:3, :]
+    U12 = U[1:3, :]
+    P12invM = np.dot(np.transpose(P12), inv_mosaic)
+    U12invM = np.dot(np.transpose(U12), inv_mosaic)
+    matK -= 0.25 * np.dot(P12invM, P12)
+    matP -= np.dot(U12invM, P12)
+    U -= np.dot(U12invM, U12)
     # --------------------------------------------------------------------------
 
 
@@ -448,33 +434,52 @@ def calc(param):
             [0., 0., 1.]])
 
         T_E = np.dot(Dtheta, np.dot(basis_ki, sample_axes))
+        evalsK = la.eigvals(matK)
 
+        # careful: factor -0.5*... missing in U matrix compared to normal gaussian!
         if param["sample_shape"] == "spherical":
             # spherical sample integration, equ. 5.9 in [end25]
             matN = matK + np.dot(T_E, np.dot(
-                (3./(4.*np.pi))**(2./3.) * 6./(sample_dims*0.5)**2., np.transpose(T_E)))
+                10./sample_dims**2., np.transpose(T_E)))
+
+            # equ. 5.7 in [end25]
+            if not all((sample_dims*0.5)**2. * (3./(4.*np.pi))**(-2./3.) <= 6./evalsK):
+                print("WARNING: Spherical sample approximation outside limit.")
+
         elif param["sample_shape"] == "cylindrical":
             # cylindrical sample integration, equ. 5.13 in [end25]
-            matN = matK + np.dot(T_E, np.dot(np.diag(
-                [ 6./(np.pi * (sample_dims[0]*0.5)**2.),
-                  6./(np.pi * (sample_dims[1]*0.5)**2.),
-                  6./sample_dims[2]**2. ]), np.transpose(T_E)))
+            matN = matK + np.dot(T_E, np.dot(np.diag([
+                8./sample_dims[0]**2.,
+                8./sample_dims[1]**2.,
+                6./sample_dims[2]**2. ]), np.transpose(T_E)))
+
+            # equ. 5.12 in [end25]
+            # TODO: check order of eigenvalues and test lengths individually instead of volume
+            if (sample_dims[0]*0.5)**2. * np.pi \
+                * (sample_dims[1]*0.5)**2. * np.pi \
+                * sample_dims[2]**2. \
+                > 6.*6.*6./(evalsK[0] * evalsK[1] * evalsK[2]):
+                print("WARNING: Cylindrical sample approximation outside limit.")
         elif param["sample_shape"] == "cuboid":
             # cuboid sample integration, equ. 5.?? in [end25]
             matN = matK + np.dot(T_E, np.dot(6./sample_dims**2., np.transpose(T_E)))
+
+            # equ. 5.7 in [end25]
+            if not all(sample_dims**2. <= 6./evalsK):
+                print("WARNING: Cubic sample approximation outside limit.")
         else:
             raise ValueError("ResPy: No valid sample shape given.")
 
-        detN = la.det(matN)
-        Nadj = helpers.adjugate(matN)
+        invN = la.inv(matN)
 
         # page 15 in [end25]
-        U -= 0.25 / detN * np.dot(matP, np.dot(Nadj, np.transpose(matP)))
-        matP -= 1. / detN * np.dot(matP, np.dot(Nadj, matK))
-        matK -= 1. / detN * np.dot(matK, np.dot(Nadj, matK))
+        U -= 0.25 * np.dot(matP, np.dot(invN, np.transpose(matP)))
+        invNK = np.dot(invN, matK)
+        matP -= np.dot(matP, invNK)
+        matK -= np.dot(matK, invNK)
 
         # page 15 and equs. 5.8, 5.13 in [end25]
-        R0 *= np.pi**3. / detN
+        R0 *= np.pi**3. / la.det(matN)
         R0 *= (6./np.pi)**3.
 
     elif param["sample_int"] == "analytical":
@@ -543,8 +548,9 @@ def calc(param):
     R = U
     # linear and constant part of quadric (V and W in [eck14], equ. 2.2 in [end25])
     sample_pos = np.array([ param["pos_x"],  param["pos_y"], param["pos_z"] ])
-    res["reso_v"] = np.dot(matP, sample_pos)
-    res["reso_s"] = np.dot(sample_pos, np.dot(matK, sample_pos))
+    sample_pos_rot = np.dot(np.transpose(Dalph_i), sample_pos)  # thanks to M. Enderle for pointing this out
+    res["reso_v"] = np.dot(matP, sample_pos_rot)
+    res["reso_s"] = np.dot(sample_pos_rot, np.dot(matK, sample_pos_rot))
 
 
     if param["mirror_Qperp"] and param["sample_sense"] < 0.:
@@ -563,7 +569,8 @@ def calc(param):
     R0 *= np.exp(-res["reso_s"])
     R0 *= dxsec
 
-    res["reso"] = R
+    # careful: factor -0.5*... missing in U matrix compared to normal gaussian!
+    res["reso"] = 2.*R
     res["r0"] = R0
     res["res_vol"] = res_vol
 
