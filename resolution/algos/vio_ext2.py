@@ -54,32 +54,67 @@ def calc(param):
     if det_shape not in ('VCYL'): # 'SPHERE' will be added
         print("this shape is not taken in account")
         return None
+    M = param["M_coating"]
+    n_b = param["n_b"]
+    thetacrit = M*np.arcsin((2*np.pi/ki)/10*np.sqrt(n_b/np.pi))
     v_rot = 2*param["v_rot"]
     Sr, Sh = param["sample_radius"], param["sample_height"]
     thetaCP, thetaBP, wP = param["windows_angle_chopper_P"], param["beam_angle_chopper_P"], param["width_chopper_P"]
     thetaCM, thetaBM, wM = param["windows_angle_chopper_M"], param["beam_angle_chopper_M"], param["width_chopper_M"]
     Eyh, Ezh, Lpe, Lme, Les = param["end_of_guide_y_height"]/2, param["end_of_guide_z_height"]/2, param["distance_P_EG"], param["distance_M_EG"], param["distance_EG_S"]
     Dr, Hdet, Dw = param["detector_radius"], param["detector_height"], param["tube_diameter"]
+
+    Hcrit, Hmax = Ezh - Les*np.tan(thetacrit), Ezh + Les*np.tan(thetacrit)
     
     VarDr = np.divide(np.square(Dw), 12)
     VarDtheta = np.square( np.divide(2*Dw*( Dr - np.sqrt( np.square(Dr) - np.square(Sr) ) ), np.square(Sr)) )
     Vartp, Vartm, Vartd = np.divide( np.square(thetaCP) + np.square(thetaBP), 12*np.square(6*v_rot) ), np.divide( np.square(thetaCM) + np.square(thetaBM), 12*np.square(6*v_rot) ), np.divide( VarDr, np.square(vf) )
     VarPx = np.square( vi*np.sqrt(Vartp) - wP )
-    VarPy = ( np.divide(np.square(Eyh), 3)
-            + np.square(Lpe)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
-            + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
-            + np.divide(2*np.square(Lpe), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
-    VarPz = ( np.divide(np.square(Ezh), 3)
-            + np.divide(np.square(Lpe), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
-            + np.divide(4*Lpe*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
+    VarPy = np.divide(1,12)*( 3*np.square(Sr) + (4*np.square(Lpe + Les) + np.square(Sr))*np.tan(thetacrit) )
+    VarPz = 1
+    if Sh/2 <= Hcrit:
+        VarPz = np.divide(1,12) * ( np.square(Sh) + (4*np.square(Lpe + Les) + np.square(Sr))*np.square(np.tan(thetacrit)) )
+    elif Hcrit < Sh/2 < Hmax:
+        VarPz = np.divide(1, 36*Sh) * ( np.divide(1, np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr)))*(Sh - 2*Hcrit)*(
+            (3*np.square(Hcrit) + np.square(Hcrit + Sh))*(2*Lpe*(np.square(Les) - np.square(Sr) + Lpe*Les) - np.sqrt(np.square(Les) - np.square(Sr))*(2*np.square(Lpe) - np.square(Sr) + 2*Lpe*Les))
+            + 3*Ezh*(Sh + 2*Hcrit)*(2*Lpe*(np.square(Les) - np.square(Sr) - 2*Lpe*Les) + np.sqrt(np.square(Les) - np.square(Sr))*(4*np.square(Lpe) + np.square(Sr) - 2*Lpe*Les))
+            + 12*np.square(Ezh)*(2*Lpe*(2*np.square(Sr) - 2*np.square(Les) + Lpe*Les) + np.sqrt(np.square(Les) - np.square(Sr))*(np.square(Sr) - 2*np.square(Lpe) + 4*Lpe*Les))
+            - 3*np.tan(thetacrit)*(Sh + 2*Hcrit)*(2*np.square(Lpe)*(np.square(Les) - np.square(Sr)) + np.sqrt(np.square(Les) - np.square(Sr))*(2*Les*np.square(Sr) + Lpe*np.square(Sr) - 2*np.square(Lpe)*Les))
+            - 12*np.tan(thetacrit)*Ezh*(2*np.square(Lpe)*(np.square(Sr)-np.square(Les)) + np.sqrt(np.square(Les) - np.square(Sr))*(2*np.square(Lpe)*Les + Les*np.square(Sr) + 2*Lpe*np.square(Sr)))
+            + 3*np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr))*(np.square(2*Lpe + 2*Les)+np.square(Sr))*np.square(np.tan(thetacrit)))
+        + 6*(4*np.power(Hcrit, 3) + Hcrit*(4*np.square(Lpe + Les) + np.square(Sr))*np.square(np.tan(thetacrit))))
+    else:
+        VarPz = np.divide(1, 18*Sh) * ( np.divide(1, np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr)))*(Hmax - Hcrit)*(
+            (3*np.square(Hcrit) + np.square(Hcrit + 2*Hmax))*(2*Lpe*(np.square(Les) - np.square(Sr) + Lpe*Les) - np.sqrt(np.square(Les) - np.square(Sr))*(2*np.square(Lpe) - np.square(Sr) + 2*Lpe*Les))
+            + 3*Ezh*(2*Hmax + 2*Hcrit)*(2*Lpe*(np.square(Les) - np.square(Sr) - 2*Lpe*Les) + np.sqrt(np.square(Les) - np.square(Sr))*(4*np.square(Lpe) + np.square(Sr) - 2*Lpe*Les))
+            + 12*np.square(Ezh)*(2*Lpe*(2*np.square(Sr) - 2*np.square(Les) + Lpe*Les) + np.sqrt(np.square(Les) - np.square(Sr))*(np.square(Sr) - 2*np.square(Lpe) + 4*Lpe*Les))
+            - 3*np.tan(thetacrit)*(2*Hmax + 2*Hcrit)*(2*np.square(Lpe)*(np.square(Les) - np.square(Sr)) + np.sqrt(np.square(Les) - np.square(Sr))*(2*Les*np.square(Sr) + Lpe*np.square(Sr) - 2*np.square(Lpe)*Les))
+            - 12*np.tan(thetacrit)*Ezh*(2*np.square(Lpe)*(np.square(Sr)-np.square(Les)) + np.sqrt(np.square(Les) - np.square(Sr))*(2*np.square(Lpe)*Les + Les*np.square(Sr) + 2*Lpe*np.square(Sr)))
+            + 3*np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr))*(np.square(2*Lpe + 2*Les)+np.square(Sr))*np.square(np.tan(thetacrit)))
+        + 3*(4*np.power(Hcrit, 3) + Hcrit*(4*np.square(Lpe + Les) + np.square(Sr))*np.square(np.tan(thetacrit))))
     VarMx = np.square( vi*np.sqrt(Vartm) - wM )
-    VarMy = ( np.divide(np.square(Eyh), 3)
-            + np.square(Lme)*( 2*np.divide(np.square(Les), np.square(Sr))*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1 )
-            + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Eyh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les))))
-            + np.divide(2*np.square(Lme), 3*np.square(Sr))*np.square(Eyh)*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) )
-    VarMz = ( np.divide(np.square(Ezh), 3)
-            + np.divide(np.square(Lme), 3*np.square(Sr))*(np.divide(np.square(Sh), 2) + 2*np.square(Ezh))*(np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) - 1) 
-            + np.divide(4*Lme*Les, 3*np.square(Sr))*np.square(Ezh)*(1 - np.sqrt(1 - np.divide(np.square(Sr), np.square(Les)))) )
+    VarMy = np.divide(1,12)*( 3*np.square(Sr) + (4*np.square(Lme + Les) + np.square(Sr))*np.tan(thetacrit) )
+    VarMz = 1
+    if Sh/2 <= Hcrit:
+        VarMz = np.divide(1,12) * ( np.square(Sh) + (4*np.square(Lme + Les) + np.square(Sr))*np.square(np.tan(thetacrit)) )
+    elif Hcrit < Sh/2 < Hmax:
+        VarMz = np.divide(1, 36*Sh) * ( np.divide(1, np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr)))*(Sh - 2*Hcrit)*(
+            (3*np.square(Hcrit) + np.square(Hcrit + Sh))*(2*Lme*(np.square(Les) - np.square(Sr) + Lme*Les) - np.sqrt(np.square(Les) - np.square(Sr))*(2*np.square(Lme) - np.square(Sr) + 2*Lme*Les))
+            + 3*Ezh*(Sh + 2*Hcrit)*(2*Lme*(np.square(Les) - np.square(Sr) - 2*Lme*Les) + np.sqrt(np.square(Les) - np.square(Sr))*(4*np.square(Lme) + np.square(Sr) - 2*Lme*Les))
+            + 12*np.square(Ezh)*(2*Lme*(2*np.square(Sr) - 2*np.square(Les) + Lme*Les) + np.sqrt(np.square(Les) - np.square(Sr))*(np.square(Sr) - 2*np.square(Lme) + 4*Lme*Les))
+            - 3*np.tan(thetacrit)*(Sh + 2*Hcrit)*(2*np.square(Lme)*(np.square(Les) - np.square(Sr)) + np.sqrt(np.square(Les) - np.square(Sr))*(2*Les*np.square(Sr) + Lme*np.square(Sr) - 2*np.square(Lme)*Les))
+            - 12*np.tan(thetacrit)*Ezh*(2*np.square(Lme)*(np.square(Sr)-np.square(Les)) + np.sqrt(np.square(Les) - np.square(Sr))*(2*np.square(Lme)*Les + Les*np.square(Sr) + 2*Lme*np.square(Sr)))
+            + 3*np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr))*(np.square(2*Lme + 2*Les)+np.square(Sr))*np.square(np.tan(thetacrit)))
+        + 6*(4*np.power(Hcrit, 3) + Hcrit*(4*np.square(Lme + Les) + np.square(Sr))*np.square(np.tan(thetacrit))))
+    else:
+        VarMz = np.divide(1, 18*Sh) * ( np.divide(1, np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr)))*(Hmax - Hcrit)*(
+            (3*np.square(Hcrit) + np.square(Hcrit + 2*Hmax))*(2*Lme*(np.square(Les) - np.square(Sr) + Lme*Les) - np.sqrt(np.square(Les) - np.square(Sr))*(2*np.square(Lme) - np.square(Sr) + 2*Lme*Les))
+            + 3*Ezh*(2*Hmax + 2*Hcrit)*(2*Lme*(np.square(Les) - np.square(Sr) - 2*Lme*Les) + np.sqrt(np.square(Les) - np.square(Sr))*(4*np.square(Lme) + np.square(Sr) - 2*Lme*Les))
+            + 12*np.square(Ezh)*(2*Lme*(2*np.square(Sr) - 2*np.square(Les) + Lme*Les) + np.sqrt(np.square(Les) - np.square(Sr))*(np.square(Sr) - 2*np.square(Lme) + 4*Lme*Les))
+            - 3*np.tan(thetacrit)*(2*Hmax + 2*Hcrit)*(2*np.square(Lme)*(np.square(Les) - np.square(Sr)) + np.sqrt(np.square(Les) - np.square(Sr))*(2*Les*np.square(Sr) + Lme*np.square(Sr) - 2*np.square(Lme)*Les))
+            - 12*np.tan(thetacrit)*Ezh*(2*np.square(Lme)*(np.square(Sr)-np.square(Les)) + np.sqrt(np.square(Les) - np.square(Sr))*(2*np.square(Lme)*Les + Les*np.square(Sr) + 2*Lme*np.square(Sr)))
+            + 3*np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr))*(np.square(2*Lme + 2*Les)+np.square(Sr))*np.square(np.tan(thetacrit)))
+        + 3*(4*np.power(Hcrit, 3) + Hcrit*(4*np.square(Lme + Les) + np.square(Sr))*np.square(np.tan(thetacrit))))
     VarSx, VarSy, VarSz = np.divide(np.square(Sr), 4), np.divide(np.square(Sr), 4), np.divide(np.square(Sh), 12)
     VarDx = np.square(np.cos(theta_f))*VarDr + np.square(Dr)*np.square(np.sin(theta_f))*VarDtheta
     VarDy = np.square(np.sin(theta_f))*VarDr + np.square(Dr)*np.square(np.cos(theta_f))*VarDtheta
