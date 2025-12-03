@@ -49,17 +49,29 @@ covQhw = np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
 def k2v(k:float):
     return np.divide(k*np.square(m2A)*hbar, m_n)
 
-def length(radS:float, heiS:float, L_PE:float, L_ME:float, L_ES:float, wEy:float, wEz:float, moyPx:float, sigPx:float, moyMx:float, sigMx:float):
+def length(radS:float, heiS:float, L_PE:float, L_ME:float, L_ES:float, wEy:float, wEz:float, moyPx:float, sigPx:float, moyMx:float, sigMx:float, thetacrit:float):
     LPS, LPSx, LPSy, LPSz = 0, 0, 0, 0
     LMS, LMSx, LMSy, LMSz = 0, 0, 0, 0
+    Hcrit, Hmax = wEz - L_ES*np.tan(thetacrit), wEz + L_ES*np.tan(thetacrit)
     nb_pts = 100000
     for i in range(nb_pts):
-        Sr, theta, Sz = radS*np.sqrt(np.random.uniform(0,1)), 2*np.pi*np.random.uniform(0,1), np.random.uniform(-heiS/2, heiS/2)
+        Sr, theta = radS*np.sqrt(np.random.uniform(0,1)), 2*np.pi*np.random.uniform(0,1)
         Sx, Sy = Sr*np.cos(theta), Sr*np.sin(theta)
-        Pymin, Pymax = Sy + np.divide(L_PE + L_ES + Sx, L_ES + Sx)*(-wEy - Sy), Sy + np.divide(L_PE + L_ES + Sx, L_ES + Sx)*(wEy - Sy)
-        Pzmin, Pzmax = Sz + np.divide(L_PE + L_ES + Sx, L_ES + Sx)*(-wEz - Sz), Sz + np.divide(L_PE + L_ES + Sx, L_ES + Sx)*(wEz - Sz)
-        Mymin, Mymax = Sy + np.divide(L_ME + L_ES + Sx, L_ES + Sx)*(-wEy - Sy), Sy + np.divide(L_ME + L_ES + Sx, L_ES + Sx)*(wEy - Sy)
-        Mzmin, Mzmax = Sz + np.divide(L_ME + L_ES + Sx, L_ES + Sx)*(-wEz - Sz), Sz + np.divide(L_ME + L_ES + Sx, L_ES + Sx)*(wEz - Sz)
+        if heiS/2 < Hmax:
+            Sz = np.random.uniform(-heiS/2, heiS/2)
+        else:
+            Sz = np.random.uniform(-Hmax/2, Hmax/2)
+        Pymin, Pymax = Sy - (L_PE + L_ES + Sx)*np.tan(thetacrit), Sy + (L_PE + L_ES + Sx)*np.tan(thetacrit)
+        Mymin, Mymax = Sy - (L_ME + L_ES + Sx)*np.tan(thetacrit), Sy + (L_ME + L_ES + Sx)*np.tan(thetacrit)
+        if Sz < -Hcrit:
+            Pzmin, Pzmax = Sz + np.divide(L_PE + L_ES + Sx, L_ES + Sx)*(-wEz - Sz), Sz + (L_PE + L_ES + Sx)*np.tan(thetacrit)
+            Mzmin, Mzmax = Sz + np.divide(L_ME + L_ES + Sx, L_ES + Sx)*(-wEz - Sz), Sz + (L_ME + L_ES + Sx)*np.tan(thetacrit)
+        elif -Hcrit < Sz < Hcrit:
+            Pzmin, Pzmax = Sz - (L_PE + L_ES + Sx)*np.tan(thetacrit), Sz + (L_PE + L_ES + Sx)*np.tan(thetacrit)
+            Mzmin, Mzmax = Sz - (L_ME + L_ES + Sx)*np.tan(thetacrit), Sz + (L_ME + L_ES + Sx)*np.tan(thetacrit)
+        else:
+            Pzmin, Pzmax = Sz - (L_PE + L_ES + Sx)*np.tan(thetacrit), Sz + np.divide(L_PE + L_ES + Sx, L_ES + Sx)*(wEz - Sz)
+            Mzmin, Mzmax = Sz - (L_ME + L_ES + Sx)*np.tan(thetacrit), Sz + np.divide(L_ME + L_ES + Sx, L_ES + Sx)*(wEz - Sz)
         Px, Py, Pz = np.random.normal(moyPx, sigPx), np.random.uniform(Pymin, Pymax), np.random.uniform(Pzmin, Pzmax)
         Mx, My, Mz = np.random.normal(moyMx, sigMx), np.random.uniform(Mymin, Mymax), np.random.uniform(Mzmin, Mzmax)
         LPS += np.sqrt( np.square(Sx-Px) + np.square(Sy-Py) + np.square(Sz-Pz) )

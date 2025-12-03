@@ -64,7 +64,7 @@ IN5_NCB = {
     "end_of_guide_z_height":54e7,
     "distance_P_EG":9064.7e7,         #EG: end_of_guide
     "distance_M_EG":114.3e7,
-    "distance_EG_S":17e7,
+    "distance_EG_S":170e7,
     "detector_radius":4000e7,
     "detector_height":3000e7,
     "tube_diameter":26e7,
