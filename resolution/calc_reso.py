@@ -28,6 +28,9 @@
 # ----------------------------------------------------------------------------
 #
 
+import sys
+sys.path.append(".")
+
 import libs.tas as tas
 import libs.helpers as helpers
 import instruments.params_in20 as params_in20
