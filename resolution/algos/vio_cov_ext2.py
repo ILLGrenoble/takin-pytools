@@ -66,7 +66,7 @@ def length(radS:float, heiS:float, L_PE:float, L_ME:float, L_ES:float, wEy:float
         if Sz < -Hcrit:
             Pzmin, Pzmax = Sz + np.divide(L_PE + L_ES + Sx, L_ES + Sx)*(-wEz - Sz), Sz + (L_PE + L_ES + Sx)*np.tan(thetacrit)
             Mzmin, Mzmax = Sz + np.divide(L_ME + L_ES + Sx, L_ES + Sx)*(-wEz - Sz), Sz + (L_ME + L_ES + Sx)*np.tan(thetacrit)
-        elif -Hcrit < Sz < Hcrit:
+        elif -Hcrit <= Sz < Hcrit:
             Pzmin, Pzmax = Sz - (L_PE + L_ES + Sx)*np.tan(thetacrit), Sz + (L_PE + L_ES + Sx)*np.tan(thetacrit)
             Mzmin, Mzmax = Sz - (L_ME + L_ES + Sx)*np.tan(thetacrit), Sz + (L_ME + L_ES + Sx)*np.tan(thetacrit)
         else:

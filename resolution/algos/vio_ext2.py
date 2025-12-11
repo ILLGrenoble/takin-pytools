@@ -65,6 +65,9 @@ def calc(param):
     Dr, Hdet, Dw = param["detector_radius"], param["detector_height"], param["tube_diameter"]
 
     Hcrit, Hmax = Ezh - Les*np.tan(thetacrit), Ezh + Les*np.tan(thetacrit)
+
+    if Sh/2 > Hmax:
+        Sh = 2*Hmax
     
     VarDr = np.divide(np.square(Dw), 12)
     VarDtheta = np.square( np.divide(2*Dw*( Dr - np.sqrt( np.square(Dr) - np.square(Sr) ) ), np.square(Sr)) )
