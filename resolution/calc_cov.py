@@ -10,6 +10,9 @@
 # @desc see also [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014), doi: 10.1016/j.nima.2014.03.019
 #
 
+import sys
+sys.path.append(".")
+
 import libs.tas as tas
 import libs.reso as reso
 import libs.helpers as helpers
