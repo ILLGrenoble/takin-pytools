@@ -479,8 +479,8 @@ def calc(param):
         matK -= np.dot(matK, invNK)
 
         # page 15 and equs. 5.8, 5.13 in [end25]
-        R0 *= np.pi**3. / la.det(matN)
-        R0 *= (6./np.pi)**3.
+        R0 *= np.sqrt(np.pi**3. / la.det(matN))
+        R0 *= np.sqrt((6./np.pi)**3.)
 
     elif param["sample_int"] == "analytical":
         # this doesn't work because the error function depends on Q.
@@ -539,7 +539,7 @@ def calc(param):
     else:
         raise ValueError("ResPy: No valid sample shape given.")
 
-    R0 /= V_sample**2.
+    #R0 /= V_sample**2.
     # --------------------------------------------------------------------------
 
 
