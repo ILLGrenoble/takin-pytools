@@ -65,6 +65,9 @@ def calc(param):
     Dr, Hdet, Dw = param["detector_radius"], param["detector_height"], param["tube_diameter"]
 
     Hcrit, Hmax = Ezh - Les*np.tan(thetacrit), Ezh + Les*np.tan(thetacrit)
+
+    if Sh/2 > Hmax:
+        Sh = 2*Hmax
     
     VarDr = np.divide(np.square(Dw), 12)
     VarDtheta = np.square( np.divide(2*Dw*( Dr - np.sqrt( np.square(Dr) - np.square(Sr) ) ), np.square(Sr)) )
@@ -122,7 +125,7 @@ def calc(param):
     CovDxDy = np.cos(theta_f)*np.sin(theta_f)*VarDr - np.square(Dr)*np.cos(theta_f)*np.sin(theta_f)*VarDtheta
     covInstr = vce2.covInstrument(VarPx, VarPy, VarPz, VarMx, VarMy, VarMz, VarSx, VarSy, VarSz, VarDx, VarDy, VarDz, Vartp, Vartm, Vartd, CovDxDy)
 
-    LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vce2.length(Sr, Sh, Lpe, Lme, Les, Eyh, Ezh, -(Lpe+Les), np.sqrt(VarPx), -(Lme+Les), np.sqrt(VarMx))
+    LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz = vce2.length(Sr, Sh, Lpe, Lme, Les, Eyh, Ezh, -(Lpe+Les), np.sqrt(VarPx), -(Lme+Les), np.sqrt(VarMx), thetacrit)
     LSD, LSDz = Dr, param["det_z"]
     LSDx, LSDy = LSD*np.cos(theta_f), LSD*np.sin(theta_f)
     dict_L = {"L_PM":LPM, "L_PMx":LPMx, "L_PMy":LPMy, "L_PMz":LPMz, "L_MS":LMS, "L_MSx":LMSx, "L_MSy":LMSy, "L_MSz":LMSz, "L_SD":LSD, "L_SDx":LSDx, "L_SDy":LSDy, "L_SDz":LSDz}
