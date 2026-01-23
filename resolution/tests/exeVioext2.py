@@ -72,13 +72,14 @@ thetaCP, thetaBP, wP = 9.0, 8.5, 12e7
 thetaCM, thetaBM, wM = 3.25, 3.0, 6e7
 Eyh, Ezh, Lpe, Lme, Les = 7e7, 27e7, 9064.7e7, 1114.3e7, 170e7
 Dr, Hdet, Dw = 4000e7, 3000e7, 26e7
+Dz = 0
 Hcrit, Hmax = Ezh - Les*np.tan(thetacrit), Ezh + Les*np.tan(thetacrit)
 VarDr = np.divide(np.square(Dw), 12) #np.square(Sr) #np.divide(np.square(Dw), 4*np.pi*np.pi)  #à réfléchir -> équivalent pour air constante dans cas detecteur rectangle
 VarDtheta = np.square(0.0065)#( (1 - np.divide(1, np.sqrt(1 - np.divide(np.square(Sr), np.square(Dr)))))*(2*np.divide(np.square(Dr), np.square(Sr)) - np.divide(np.square(Dw), 6*np.square(Sr)))
             #+ np.divide(2, np.sqrt(1 - np.divide(np.square(Sr), np.square(Dr)))) -1 )
 print(np.sqrt(VarDtheta), 'Hcrit/max =', Hcrit/(1e7), Hmax/(1e7))
 
-Vartp, Vartm, Vartd = np.divide( np.square(thetaCP) + np.square(thetaBP), 12*np.square(6*v_rot) ), np.divide( np.square(thetaCM) + np.square(thetaBM), 12*np.square(6*v_rot) ), np.divide( VarDr, np.square(v_f) )
+Vartp, Vartm = np.divide( np.square(thetaCP) + np.square(thetaBP), 12*np.square(6*v_rot) ), np.divide( np.square(thetaCM) + np.square(thetaBM), 12*np.square(6*v_rot) )
 VarPx = np.square( v_i*np.sqrt(Vartp) - wP )
 VarPy = np.divide(1,12)*( 3*np.square(Sr) + (4*np.square(Lpe + Les) + np.square(Sr))*np.square(np.tan(thetacrit)) )
 VarPz = 1
@@ -127,6 +128,7 @@ else:
     + 3*(4*np.power(Hcrit, 3) + Hcrit*(4*np.square(Lme + Les) + np.square(Sr))*np.square(np.tan(thetacrit))))
 VarSx, VarSy, VarSz = np.divide(np.square(Sr), 4), np.divide(np.square(Sr), 4), np.divide(np.square(Sh), 12)
 VarDz = np.divide(1, 12) * np.square(np.divide(Hdet, 100))
+Vartd = np.divide( 1, np.square(v_f) ) * ( np.divide(np.square(Dr), np.square(Dr) + np.square(Dz))*VarDr + np.divide(np.square(Dz), np.square(Dr) + np.square(Dz))*VarDz ) 
 Var = [VarPx, VarPy, VarPz, VarMx, VarMy, VarMz, VarSx, VarSy, VarSz, 1, 1, VarDz, Vartp, Vartm, Vartd]
 
 covInstr = np.eye(15)
