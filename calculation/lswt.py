@@ -74,14 +74,10 @@ def get_energies(Qvec, sites, couplings):
 
 	H = np.zeros((2*num_sites, 2*num_sites), dtype = complex)
 	for i in range(num_sites):
-		S_i = sites[i]["S"]
-		u_i = sites[i]["u"]
-		v_i = sites[i]["v"]
+		S_i, u_i, v_i = sites[i]["S"], sites[i]["u"], sites[i]["v"]
 
 		for j in range(num_sites):
-			S_j = sites[j]["S"]
-			u_j = sites[j]["u"]
-			v_j = sites[j]["v"]
+			S_j, u_j, v_j = sites[j]["S"], sites[j]["u"], sites[j]["v"]
 			S = 0.5 * np.sqrt(S_i * S_j)
 
 			H[i, j] += S * np.dot(u_i, np.dot(J_fourier[i, j], u_j.conj()))

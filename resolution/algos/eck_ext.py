@@ -403,8 +403,8 @@ def calc(param):
     inv_mosaic = la.inv(mosaic)
 
     # equ. 4.4 in [end25]
-    R0 *= np.pi**2. / np.sqrt(la.det(mosaic))
-    R0 *= helpers.sig2fwhm / np.sqrt(2. * np.pi * mos_Q_sq * mos_v_Q_sq)
+    R0 *= np.pi / np.sqrt(la.det(mosaic))
+    R0 *= helpers.sig2fwhm*helpers.sig2fwhm / (2.*np.pi * np.sqrt(mos_Q_sq * mos_v_Q_sq))
 
     # equ. 4.5-4.7 in [end25]
     P12 = matP[1:3, :]
