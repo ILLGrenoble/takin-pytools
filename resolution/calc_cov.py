@@ -6,7 +6,9 @@
 # @license see 'LICENSE' file
 #
 # @desc For a good explanation of the covariance matrix method, see (Arens 2015), pp. 795 and 1372.
-# @desc reimplements the functionality of https://github.com/McStasMcXtrace/McCode/blob/master/tools/Legacy-Perl/mcresplot.pl
+# @desc This program reimplements the functionality of "mcresplot.pl":
+#       - https://github.com/McStasMcXtrace/McCode/blob/master/tools/Legacy-Perl/mcresplot.pl
+#       - 'mcresplot.pl' is first mentioned here: https://doi.org/10.1016/S0921-4526(99)01409-X
 # @desc see also [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014), doi: 10.1016/j.nima.2014.03.019
 #
 

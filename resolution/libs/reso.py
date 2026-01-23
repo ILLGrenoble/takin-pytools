@@ -43,10 +43,24 @@ g_eps = 1e-8
 
 #
 # volume of the ellipsoid
+# @see https://en.wikipedia.org/wiki/Volume_of_an_n-ball
 #
 def ellipsoid_volume(mat):
+    dim = len(mat)
     det = np.abs(la.det(mat))
-    return 4./3. * np.pi * np.sqrt(1./det)
+    V0 = np.sqrt(1./det)
+
+    if dim == 1:
+        return 2. * V0
+    elif dim == 2:
+        return np.pi * V0
+    elif dim == 3:
+        return 4./3. * np.pi * V0
+    elif dim == 4:
+        return 1./2. * np.pi**2. * V0
+
+    return 0.
+    
 
 
 #
