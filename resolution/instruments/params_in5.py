@@ -69,6 +69,7 @@ IN5_NCB = {
     "detector_height":3000e7,
     "tube_diameter":26e7,
     "det_shape":"VCYL",
+    "measured_height":0,
 }
 
 

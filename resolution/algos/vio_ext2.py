@@ -63,6 +63,7 @@ def calc(param):
     thetaCM, thetaBM, wM = param["windows_angle_chopper_M"], param["beam_angle_chopper_M"], param["width_chopper_M"]
     Eyh, Ezh, Lpe, Lme, Les = param["end_of_guide_y_height"]/2, param["end_of_guide_z_height"]/2, param["distance_P_EG"], param["distance_M_EG"], param["distance_EG_S"]
     Dr, Hdet, Dw = param["detector_radius"], param["detector_height"], param["tube_diameter"]
+    Dz = param["measured_height"] #Default: 0
 
     Hcrit, Hmax = Ezh - Les*np.tan(thetacrit), Ezh + Les*np.tan(thetacrit)
 
@@ -122,6 +123,7 @@ def calc(param):
     VarDx = np.square(np.cos(theta_f))*VarDr + np.square(Dr)*np.square(np.sin(theta_f))*VarDtheta
     VarDy = np.square(np.sin(theta_f))*VarDr + np.square(Dr)*np.square(np.cos(theta_f))*VarDtheta
     VarDz = np.square(np.divide(Hdet, 100))
+    np.divide( 1, np.square(vf) ) * ( np.divide(np.square(Dr), np.square(Dr) + np.square(Dz))*VarDr + np.divide(np.square(Dz), np.square(Dr) + np.square(Dz))*VarDz ) 
     CovDxDy = np.cos(theta_f)*np.sin(theta_f)*VarDr - np.square(Dr)*np.cos(theta_f)*np.sin(theta_f)*VarDtheta
     covInstr = vce2.covInstrument(VarPx, VarPy, VarPz, VarMx, VarMy, VarMz, VarSx, VarSy, VarSz, VarDx, VarDy, VarDz, Vartp, Vartm, Vartd, CovDxDy)
 
