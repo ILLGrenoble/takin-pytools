@@ -39,7 +39,7 @@ import numpy.linalg as la
 import libs.tas as tas
 import libs.helpers as helpers
 import algos.vio_cov as vio_cov
-import algos.vio_cov_ext as vio_cov_ext
+import algos.old.vio_cov_ext as vio_cov_ext
 
 
 #

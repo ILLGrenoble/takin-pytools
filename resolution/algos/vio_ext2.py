@@ -1,7 +1,5 @@
 #
-# TODO: implementation of the violini algo
-# 
-#
+# extended version of the violini method
 # @author Mecoli Victor <mecoli@ill.fr>
 # @date feb-2025
 # @license GPLv2

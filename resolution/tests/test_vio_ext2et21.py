@@ -36,7 +36,7 @@ import numpy.linalg as la
 import libs.tas as tas
 import libs.helpers as helpers
 import algos.vio_cov_ext2 as vce2
-import algos.vio_cov_ext2_1 as vce21
+import algos.old.vio_cov_ext2_1 as vce21
 
 
 test = 'vio_ext21'
