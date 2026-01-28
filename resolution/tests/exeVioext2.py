@@ -36,7 +36,7 @@ import numpy as np
 import numpy.linalg as la
 import calculation.tas as tas
 import libs.helpers as helpers
-import algos.vio_ext2 as vce2
+import algos.vio_ext as vce2
 
 nb=0.000941
 

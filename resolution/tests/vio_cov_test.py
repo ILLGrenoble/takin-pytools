@@ -36,7 +36,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(__file__) + "/..")
 
-import algos.vio_cov as vio_cov
+import algos.vio as vio_cov
 
 import numpy as np
 import pytest
