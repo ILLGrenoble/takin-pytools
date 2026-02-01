@@ -30,8 +30,8 @@ DEFINE INSTRUMENT TAS
 	double mono_angle = -1.0,
 
 	/* horizontal and vertical curvatures, -1: optimal, 0: flat */
-	double mono_curvh = -1.0,
-	double mono_curvv = -1.0,
+	double mono_curv_h = -1.0,
+	double mono_curv_v = -1.0,
 
 	/* analyser */
 	double kf = -1.0,
@@ -43,8 +43,8 @@ DEFINE INSTRUMENT TAS
 	double ana_angle = -1.0,
 
 	/* horizontal and vertical curvatures, -1: optimal, 0: flat */
-	double ana_curvh = -1.0,
-	double ana_curvv = -1.0,
+	double ana_curv_h = -1.0,
+	double ana_curv_v = -1.0,
 
 	/* sample */
 	double sample_rad = 0.01,
@@ -157,33 +157,33 @@ INITIALIZE
 		ana_angle = bragg_angle(k_to_lam(kf), ana_d);
 
 	/* negative values -> optimal monochromator curvatures */
-	if(mono_curvv < 0. || mono_curvh < 0.) {
+	if(mono_curv_v < 0. || mono_curv_h < 0.) {
 		/* focal length */
 		double f_inv = 1./dist_mono_sample + 1./dist_src_mono;
 
-		if(mono_curvv < 0.)
-			mono_curvv = foc_vert(mono_angle/180.*PI, 1./f_inv);
-		if(mono_curvh < 0.)
-			mono_curvh = foc_hori(mono_angle/180.*PI, 1./f_inv);
+		if(mono_curv_v < 0.)
+			mono_curv_v = foc_vert(mono_angle/180.*PI, 1./f_inv);
+		if(mono_curv_h < 0.)
+			mono_curv_h = foc_hori(mono_angle/180.*PI, 1./f_inv);
 	}
 
 	/* negative values -> optimal analyser curvatures */
-	if(ana_curvv < 0. || ana_curvh < 0.) {
+	if(ana_curv_v < 0. || ana_curv_h < 0.) {
 		/* focal length */
 		double f_inv = 1./dist_ana_det + 1./dist_sample_ana;
 
-		if(ana_curvv < 0.)
-			ana_curvv = foc_vert(ana_angle/180.*PI, 1./f_inv);
-		if(ana_curvh < 0.)
-			ana_curvh = foc_hori(ana_angle/180.*PI, 1./f_inv);
+		if(ana_curv_v < 0.)
+			ana_curv_v = foc_vert(ana_angle/180.*PI, 1./f_inv);
+		if(ana_curv_h < 0.)
+			ana_curv_h = foc_hori(ana_angle/180.*PI, 1./f_inv);
 	}
 
 	printf("--------------------------------------------------------------------------------\n");
 	printf("Source: lambda = %.4f A, k = %.4f 1/A, E = %.4f meV\n", src_lam, src_k, src_E);
 	printf("Monochromator: ki = %.4f, theta = %.4f deg, d = %.4f, vfoc = %.4f m, hfoc = %.4f m\n",
-		ki, mono_angle, mono_d, mono_curvv, mono_curvh);
+		ki, mono_angle, mono_d, mono_curv_v, mono_curv_h);
 	printf("Analyser: kf = %.4f, theta = %.4f deg, d = %.4f, vfoc = %.4f m, hfoc = %.4f m\n",
-		kf, ana_angle, ana_d, ana_curvv, ana_curvh);
+		kf, ana_angle, ana_d, ana_curv_v, ana_curv_h);
 	printf("Sample: 2theta = %.4f\n", sample_sc_angle);
 	printf("--------------------------------------------------------------------------------\n");
 %}
@@ -236,7 +236,7 @@ COMPONENT mono = Monochromator_curved(
 	width = mono_width, height = mono_height,
 	DM = mono_d, mosaic = mono_mosaic,
 	NH = mono_slabs_h, NV = mono_slabs_v,
-	RV = -mono_curvv, RH = -mono_curvh,
+	RV = -mono_curv_v, RH = -mono_curv_h,
 	r0 = 1, reflect = mono_R, t0 = 1, transmit = mono_T,
 	order = 0)
 AT (0, 0, 0) RELATIVE mono_arm1
@@ -350,7 +350,7 @@ COMPONENT ana = Monochromator_curved(
 	width = ana_width, height = ana_height,
 	DM = ana_d, mosaic = ana_mosaic,
 	NH = ana_slabs_h, NV = ana_slabs_v,
-	RV = -ana_curvv, RH = -ana_curvh,
+	RV = -ana_curv_v, RH = -ana_curv_h,
 	r0 = 1, reflect = ana_R, t0 = 1, transmit = ana_T,
 	order = 0)
 AT (0, 0, 0) RELATIVE ana_arm1
