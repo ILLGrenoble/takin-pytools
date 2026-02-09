@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 #
+# demo calculating a ferromagnetic and an antiferromagnetic dispersion,
 # test for the minimalistic implementation of linear spin-wave theory (see: https://arxiv.org/abs/1402.6069)
+#
 # @author Tobias Weber <tweber@ill.fr>
 # @date 24-oct-2024
 # @license see 'LICENSE' file
