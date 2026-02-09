@@ -35,14 +35,13 @@ def calc_dispersion(is_ferromagnetic = True):
 	#     "gen": arbitrary interaction matrix, can be used for single-ion anisotropy
 	#     "dist": distance in rlu to the next unit cell for the coupling
 	#
-	gen = np.zeros([3, 3])
 	if is_ferromagnetic:  # ferromagnetic dispersion
 		title = "Ferromagnetic"
 		sites = [
 			{ "S" : 1., "Sdir" : [ 0, 0, 1 ] },
 		]
 		couplings = [
-			{ "sites" : [ 0, 0 ], "J" : -1., "DMI" : [ 0, 0, 0 ], "gen" : gen, "dist" : [ 1, 0, 0 ] },
+			{ "sites" : [ 0, 0 ], "J" : -1., "dist" : [ 1, 0, 0 ] },
 		]
 	else:  # antiferromagnetic dispersion
 		title = "Antiferromagnetic"
@@ -51,8 +50,8 @@ def calc_dispersion(is_ferromagnetic = True):
 			{ "S" : 1., "Sdir" : [ 0, 0, -1 ] },
 		]
 		couplings = [
-			{ "sites" : [ 0, 1 ], "J" : 1., "DMI" : [ 0, 0, 0 ], "gen" : gen, "dist" : [ 0, 0, 0 ] },
-			{ "sites" : [ 1, 0 ], "J" : 1., "DMI" : [ 0, 0, 0 ], "gen" : gen, "dist" : [ 2, 0, 0 ] },
+			{ "sites" : [ 0, 1 ], "J" : 1., "dist" : [ 0, 0, 0 ] },
+			{ "sites" : [ 1, 0 ], "J" : 1., "dist" : [ 2, 0, 0 ] },
 		]
 
 	lswt.init(sites, couplings, verbose)

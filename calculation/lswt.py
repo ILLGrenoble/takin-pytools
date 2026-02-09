@@ -50,7 +50,9 @@ def init(sites, couplings, verbose = False):
 		print_infos("\nrot = \n%s\nu = %s\nv = %s" % (rot, site["u"], site["v"]))
 
 	for coupling in couplings:
-		coupling["J_real"] = np.diag([ coupling["J"] ]*3) + skew(coupling["DMI"]) + coupling["gen"]
+		coupling["J_real"] = np.diag([ coupling["J"] ]*3)
+		if "DMI" in coupling: coupling["J_real"] += skew(coupling["DMI"])
+		if "gen" in coupling: coupling["J_real"] += coupling["gen"]
 		print_infos("\nJ_real =\n%s" % coupling["J_real"])
 
 
