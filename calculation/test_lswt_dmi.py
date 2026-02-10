@@ -48,8 +48,10 @@ sia = np.zeros([3, 3])
 sia[2, 2] = SIA
 
 couplings = [
-	# J, DMI, and SIA interactions
-	{ "sites" : [ 0, 0 ], "J" : J, "DMI" : DMI, "gen" : sia, "dist" : [ 1, 0, 0 ] },
+	# J and DMI
+	{ "sites" : [ 0, 0 ], "J" : J, "DMI" : DMI, "dist" : [ 1, 0, 0 ] },
+	# SIA
+	{ "sites" : [ 0, 0 ], "J" : 0., "gen" : sia, "dist" : [ 0, 0, 0 ] },
 ]
 
 print("Calculating non-reciprocal ferromagnetic dispersion...")
