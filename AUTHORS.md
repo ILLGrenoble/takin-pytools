@@ -26,6 +26,13 @@ CONTRIBUTORS
     - derivation and Python implementation of the extended Violini resolution method
 
 
+**Elliott Perryman**
+  - mail: perrymand\<AT\>ill.fr
+  - active: 2026
+  - contributions:
+    - notebooks/lswt_jax.ipynb
+
+
 **Gabriel Rebolini**
   - mail: rebolinig\<AT\>ill.fr
   - active: april-june 2025 for an internship
