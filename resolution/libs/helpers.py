@@ -169,9 +169,8 @@ def orthonormalise(mat):
     for idx in range(order):
         for idx2 in range(idx):
             # remove projections onto row vector with index 2
-            len_sq = np.dot(mat_new[idx2, :], mat_new[idx2, :])
-            proj = np.dot(mat[idx, :], mat_new[idx2, :]) / len_sq
-            mat_new[idx, :] -= np.dot(proj, mat_new[idx2, :])
+            proj = (mat[idx, :] @ mat_new[idx2, :]) / (mat_new[idx2, :] @ mat_new[idx2, :])
+            mat_new[idx, :] -= proj * mat_new[idx2, :]
 
         # normalise
         mat_new[idx, :] /= la.norm(mat_new[idx, :])
@@ -206,9 +205,9 @@ def calc_triangle(param, eps = 1e-4):
 
         param["sample_orient"] = orthonormalise(
             np.array([
-                np.dot(B, orient_rlu),
-                np.dot(B, param["sample_plane_2"]),
-                np.dot(B, orient_up_rlu)
+                B @ orient_rlu,
+                B @ param["sample_plane_2"],
+                B @ orient_up_rlu
             ]))
 
         if param["verbose"]:

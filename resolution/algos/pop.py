@@ -202,7 +202,7 @@ def combine_mono_ana_trafos(Dm, Tm, Am, Bm, Da, Ta, Aa, Ba, pointlike = False):
     B[0:N, M:2*M] = Ba
 
 
-    BA = np.dot(B, A)
+    BA = B @ A
 
 
     if pointlike:
@@ -399,7 +399,7 @@ def calc(param, pointlike = False):
         [C, BA] = combine_mono_ana_trafos(Cm, None, Am, Bm, Ca, None, Aa, Ba, pointlike)
 
         # [pop75], equ. 8
-        H = np.dot(np.dot(np.transpose(C), F), C)
+        H = np.transpose(C) @ F @ C
 
     else:
         # ki and kf trafo matrices
@@ -413,11 +413,11 @@ def calc(param, pointlike = False):
         [D, T, BA] = combine_mono_ana_trafos(Dm, Tm, Am, Bm, Da, Ta, Aa, Ba, pointlike)
 
         # [pop75], equ. 20
-        K = S + np.dot(np.dot(np.transpose(T), F), T)
+        K = S + np.transpose(T) @ F @ T
         Kinv = la.inv(K)
 
         # [pop75], equ. 17
-        Hinv = np.dot(np.dot(D, Kinv), np.transpose(D))
+        Hinv = D @ Kinv @ np.transpose(D)
         H = la.inv(Hinv)
     # -------------------------------------------------------------------------
 
@@ -426,7 +426,7 @@ def calc(param, pointlike = False):
     HGinv = la.inv(HG)
 
     # [pop75], equ. 20
-    cov = np.dot(np.dot(BA, HGinv), np.transpose(BA))
+    cov = BA @ HGinv @ np.transpose(BA)
 
     # include sample mosaic, see [zhe07], equs. 12-14
     mos_h = Q**2. * param["sample_mosaic"]**2.
@@ -439,7 +439,7 @@ def calc(param, pointlike = False):
     if param["mirror_Qperp"] and param["sample_sense"] < 0.:
         # mirror Q_perp
         matMirror = helpers.mirror_matrix(len(R), 1)
-        R = np.dot(np.dot(np.transpose(matMirror), R), matMirror)
+        R = np.transpose(matMirror) @ R @ matMirror
 
     R0 = dmono_refl*dana_effic * dxsec * (0.5*np.pi)**2. \
             / (np.sin(thetam) * np.sin(thetaa))
@@ -459,7 +459,7 @@ def calc(param, pointlike = False):
         R0 *= np.sqrt(la.det(F) / la.det(HG))
     else:
         # [pop75], equ. 13a & 16
-        DS = np.dot(np.dot(D, Sinv), np.transpose(D))
+        DS = D @ Sinv @ np.transpose(D)
         DSinv = la.inv(DS) + G
         R0 *= np.sqrt(la.det(S)*la.det(F) / (la.det(K)*la.det(DSinv)))
 

@@ -302,12 +302,12 @@ def calc(param):
     #--------------------------------------------------------------------------
     # ana part, equ. 43 in [eck14]
     # --------------------------------------------------------------------
-    sample_pos_kf = np.dot(helpers.rotation_matrix_nd(-twotheta, 3), sample_pos)
+    sample_pos_kf = helpers.rotation_matrix_nd(-twotheta, 3) @ sample_pos
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
         T_vert = helpers.rotation_matrix_3d_x(-np.pi / 2.)
-        sample_pos_kf = np.dot(T_vert, sample_pos_kf)
+        sample_pos_kf = T_vert @ sample_pos_kf
 
     [E, F, G, H, dReflA] = get_mono_vals(
         param["det_w"]/det_factor, param["det_h"]/det_factor,
@@ -324,8 +324,8 @@ def calc(param):
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
-        E = np.dot(np.dot(np.transpose(T_vert), E), T_vert)
-        F = np.dot(np.transpose(T_vert), F)  # possible typo in [eck20]?
+        E = np.transpose(T_vert) @ E @ T_vert
+        F = np.transpose(T_vert) @ F  # possible typo in [eck20]?
     #--------------------------------------------------------------------------
 
 
@@ -355,18 +355,18 @@ def calc(param):
     Dalph_f = helpers.rotation_matrix_nd(-Q_kf, 3)
 
     matAE = np.zeros((6,6))
-    matAE[0:3, 0:3] = np.dot(np.dot(np.transpose(Dalph_i), A), Dalph_i)
-    matAE[3:6, 3:6] = np.dot(np.dot(np.transpose(Dalph_f), E), Dalph_f)
+    matAE[0:3, 0:3] = np.transpose(Dalph_i) @ A @ Dalph_i
+    matAE[3:6, 3:6] = np.transpose(Dalph_f) @ E @ Dalph_f
 
     # U1 matrix
     # typo in paper in quadric trafo in equ. 54 (top)?
-    U1 = np.dot(np.dot(np.transpose(Tinv), matAE), Tinv)
+    U1 = np.transpose(Tinv) @ matAE @ Tinv
 
     # V1 vector
     vecBF = np.zeros(6)
-    vecBF[0:3] = np.dot(np.transpose(Dalph_i), B)
-    vecBF[3:6] = np.dot(np.transpose(Dalph_f), F)
-    V1 = np.dot(vecBF, Tinv)
+    vecBF[0:3] = np.transpose(Dalph_i) @ B
+    vecBF[3:6] = np.transpose(Dalph_f) @ F
+    V1 = vecBF @ Tinv
 
 
     # --------------------------------------------------------------------------
@@ -415,7 +415,7 @@ def calc(param):
     if param["mirror_Qperp"] and param["sample_sense"] < 0.:
         # mirror Q_perp
         matMirror = helpers.mirror_matrix(len(R), 1)
-        R = np.dot(np.dot(np.transpose(matMirror), R), matMirror)
+        R = np.transpose(matMirror) @ R @ matMirror
         res["reso_v"][1] = -res["reso_v"][1]
 
 

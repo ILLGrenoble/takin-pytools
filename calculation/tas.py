@@ -52,7 +52,7 @@ def rotate(_axis, vec, phi):
     s = np.sin(phi)
     c = np.cos(phi)
 
-    return c*vec + (1.-c)*np.dot(vec, axis)*axis + s*np.cross(axis, vec)
+    return c*vec + (1.-c)*vec@axis*axis + s*np.cross(axis, vec)
 
 
 #
@@ -62,7 +62,7 @@ def rotate(_axis, vec, phi):
 #
 def get_metric(B):
     #return np.einsum("ij,ik -> jk", B, B)
-    return np.dot(np.transpose(B), B)
+    return np.transpose(B) @ B
 
 
 #
@@ -88,7 +88,7 @@ def cross(a, b, B):
 # see (Arens 2015), p. 808
 #
 def dot(a, b, metric):
-    return np.dot(a, np.dot(metric, b))
+    return a @ metric @ b
 
 
 #
@@ -209,16 +209,16 @@ def get_B(lattice, angles):
 # see https://dx.doi.org/10.1107/S0021889805004875
 #
 def get_UB(B, orient1_rlu, orient2_rlu, orientup_rlu):
-    orient1_invA = np.dot(B, orient1_rlu)
-    orient2_invA = np.dot(B, orient2_rlu)
-    orientup_invA = np.dot(B, orientup_rlu)
+    orient1_invA = B @ orient1_rlu
+    orient2_invA = B @ orient2_rlu
+    orientup_invA = B @ orientup_rlu
 
     orient1_invA = orient1_invA / la.norm(orient1_invA)
     orient2_invA = orient2_invA / la.norm(orient2_invA)
     orientup_invA = orientup_invA / la.norm(orientup_invA)
 
     U_invA = np.array([orient1_invA, orient2_invA, orientup_invA])
-    UB = np.dot(U_invA, B)
+    UB = U_invA @ B
     return UB
 
 
@@ -266,9 +266,9 @@ def get_hkl(ki, kf, a3, Qlen, orient_rlu, orient_up_rlu, B, sense_sample = 1., a
     # angle between Q and orientation reflex
     xi = - a3 + a3_offs - psi
 
-    Q_lab = rotate(np.dot(B, orient_up_rlu), np.dot(B, orient_rlu*Qlen), xi)
+    Q_lab = rotate(B @ orient_up_rlu, B @ orient_rlu*Qlen, xi)
     Q_lab *= Qlen / la.norm(Q_lab)
-    Q_rlu = np.dot(B_inv, Q_lab)
+    Q_rlu = B_inv @ Q_lab
 
     return Q_rlu
 # -----------------------------------------------------------------------------
@@ -1249,7 +1249,7 @@ def run_tas():
         B = get_B(lattice, angles)
 
         Q_rlu = np.array([ argv.Qh, argv.Qk, argv.Ql ])
-        Q_lab = np.dot(B, Q_rlu)
+        Q_lab = B @ Q_rlu
 
         print("Crystal B matrix:\n%s\n" % B)
         print("Q = %g / A" % la.norm(Q_lab))

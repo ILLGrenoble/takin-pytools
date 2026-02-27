@@ -171,12 +171,12 @@ def calc_covar(Q, E, w, Qpara, Qperp):
         print("Transformation into (Qpara, Qperp, Qup, E) system:\n%s\n" % T)
 
     # transform mean Q vector
-    Qmean_Q = np.dot(np.transpose(T), Qmean)
+    Qmean_Q = np.transpose(T) @ Qmean
     if options["verbose"]:
         print("Mean (Q, E) vector in (Qpara, Qperp, Qup, E) system:\n%s\n" % Qmean_Q)
 
     # transform the covariance matrix
-    Qcov_Q = np.dot(np.transpose(T), np.dot(Qcov, T))
+    Qcov_Q = np.transpose(T) @ Qcov @ T
     if options["verbose"]:
         print("Covariance matrix in (Qpara, Qperp, Qup, E) system:\n%s\n" % Qcov_Q)
 
@@ -191,7 +191,7 @@ def calc_covar(Q, E, w, Qpara, Qperp):
     # transform all neutron events
     Q4_Q = np.array([ ])
     if options["plot_neutrons"]:
-        Q4_Q = np.dot(Q4, T)
+        Q4_Q = Q4 @ T
         if not options["centre_on_Q"]:
             Q4_Q -= Qmean_Q
 
@@ -297,7 +297,7 @@ def run_cov():
             [Q, E, w] = load_events_QE(infile)
             # convert rlu to 1/A
             if len(B) != 0:
-                Q = np.dot(Q, np.transpose(B))
+                Q = Q @ np.transpose(B)
         # input file is in the kix kiy kiz kfx kfy kfz wi wf format?
         else:
             [Q, E, w] = load_events_kikf(infile)
@@ -317,8 +317,8 @@ def run_cov():
 
         # convert rlu to 1/A
         if len(B) != 0:
-            Qpara = np.dot(B, Qpara)
-            Qperp = np.dot(B, Qperp)
+            Qpara = B @ Qpara
+            Qperp = B @ Qperp
     else:
         Qpara = np.array([])
         Qperp = np.array([])

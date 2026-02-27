@@ -316,9 +316,9 @@ def calc(param):
         T_vert = helpers.rotation_matrix_3d_x(-np.pi / 2.)
 
         # T_vert has to be applied at the same positions in the formulas as Dtwotheta, see eck.py
-        E = np.dot(np.dot(np.transpose(T_vert), E), T_vert)
-        F = np.dot(np.dot(np.transpose(T_vert), F), T_vert)
-        G = np.dot(np.dot(np.transpose(T_vert), G), T_vert)
+        E = np.transpose(T_vert) @ E @ T_vert
+        F = np.transpose(T_vert) @ F @ T_vert
+        G = np.transpose(T_vert) @ G @ T_vert
     #--------------------------------------------------------------------------
 
 
@@ -350,19 +350,19 @@ def calc(param):
     Dtheta = helpers.rotation_matrix_nd(-theta, 3)
 
     matAE = np.zeros((6, 6))
-    matAE[0:3, 0:3] = np.dot(np.dot(np.transpose(Dalph_i), A), Dalph_i)
-    matAE[3:6, 3:6] = np.dot(np.dot(np.transpose(Dalph_f), E), Dalph_f)
+    matAE[0:3, 0:3] = np.transpose(Dalph_i) @ A @ Dalph_i
+    matAE[3:6, 3:6] = np.transpose(Dalph_f) @ E @ Dalph_f
 
     # U1 matrix
     # typo in paper in quadric trafo in equ. 54 (top)?
-    U1 = np.dot(np.dot(np.transpose(Tinv), matAE), Tinv)
+    U1 = np.transpose(Tinv) @ matAE @ Tinv
 
     # V matrix from equ. 2.9 [end25], corresponds to V1 vector in [eck14]
     matBF = np.zeros((6, 3))
-    matBF[0:3, :] = np.dot(np.transpose(Dalph_i), B)
+    matBF[0:3, :] = np.transpose(Dalph_i) @ B
     # the transpose of Dtwotheta is part of Dalph_f^T
-    matBF[3:6, :] = np.dot(np.dot(np.transpose(Dalph_f), F), Dtwotheta)
-    matV = np.dot(np.transpose(Tinv), matBF)
+    matBF[3:6, :] = np.transpose(Dalph_f) @ F @ Dtwotheta
+    matV = np.transpose(Tinv) @ matBF
 
 
     # --------------------------------------------------------------------------
@@ -377,7 +377,7 @@ def calc(param):
     matP = reso.quadric_proj_mat(matV2, U2, 4)
 
     # K matrix from equ. 2.11 in [end25]
-    matK = C + np.dot(np.dot(np.transpose(Dtwotheta), G), Dtwotheta)
+    matK = C + np.transpose(Dtwotheta) @ G @ Dtwotheta
 
     # equ. 2.19 in [end25], corresponds to equ. 57 & 58 in [eck14], "W -= ..." in eck.py
     for i in range(0, 3):
@@ -409,11 +409,11 @@ def calc(param):
     # equ. 4.5-4.7 in [end25]
     P12 = matP[1:3, :]
     U12 = U[1:3, :]
-    P12invM = np.dot(np.transpose(P12), inv_mosaic)
-    U12invM = np.dot(np.transpose(U12), inv_mosaic)
-    matK -= 0.25 * np.dot(P12invM, P12)
-    matP -= np.dot(U12invM, P12)
-    U -= np.dot(U12invM, U12)
+    P12invM = np.transpose(P12) @ inv_mosaic
+    U12invM = np.transpose(U12) @ inv_mosaic
+    matK -= 0.25 * P12invM @ P12
+    matP -= U12invM @ P12
+    U -= U12invM @ U12
     # --------------------------------------------------------------------------
 
 
@@ -433,14 +433,13 @@ def calc(param):
             [0., 1., 0.],
             [0., 0., 1.]])
 
-        T_E = np.dot(Dtheta, np.dot(basis_ki, sample_axes))
+        T_E = Dtheta @ basis_ki @ sample_axes
         evalsK = la.eigvals(matK)
 
         # careful: factor -0.5*... missing in U matrix compared to normal gaussian!
         if param["sample_shape"] == "spherical":
             # spherical sample integration, equ. 5.9 in [end25]
-            matN = matK + np.dot(T_E, np.dot(
-                10./sample_dims**2., np.transpose(T_E)))
+            matN = matK + T_E @ 10./sample_dims**2. @ np.transpose(T_E)
 
             # equ. 5.7 in [end25]
             if not all((sample_dims*0.5)**2. * (3./(4.*np.pi))**(-2./3.) <= 6./evalsK):
@@ -448,10 +447,10 @@ def calc(param):
 
         elif param["sample_shape"] == "cylindrical":
             # cylindrical sample integration, equ. 5.13 in [end25]
-            matN = matK + np.dot(T_E, np.dot(np.diag([
+            matN = matK + T_E @ np.diag([
                 8./sample_dims[0]**2.,
                 8./sample_dims[1]**2.,
-                6./sample_dims[2]**2. ]), np.transpose(T_E)))
+                6./sample_dims[2]**2. ]) @ np.transpose(T_E)
 
             # equ. 5.12 in [end25]
             # TODO: check order of eigenvalues and test lengths individually instead of volume
@@ -462,7 +461,7 @@ def calc(param):
                 print("WARNING: Cylindrical sample approximation outside limit.")
         elif param["sample_shape"] == "cuboid":
             # cuboid sample integration, equ. 5.?? in [end25]
-            matN = matK + np.dot(T_E, np.dot(6./sample_dims**2., np.transpose(T_E)))
+            matN = matK + T_E @ 6./sample_dims**2. @ np.transpose(T_E)
 
             # equ. 5.7 in [end25]
             if not all(sample_dims**2. <= 6./evalsK):
@@ -473,10 +472,10 @@ def calc(param):
         invN = la.inv(matN)
 
         # page 15 in [end25]
-        U -= 0.25 * np.dot(matP, np.dot(invN, np.transpose(matP)))
-        invNK = np.dot(invN, matK)
-        matP -= np.dot(matP, invNK)
-        matK -= np.dot(matK, invNK)
+        U -= 0.25 * matP @ invN @ np.transpose(matP)
+        invNK = invN @ matK
+        matP -= matP @ invNK
+        matK -= matK @ invNK
 
         # page 15 and equs. 5.8, 5.13 in [end25]
         R0 *= np.sqrt(np.pi**3. / la.det(matN))
@@ -502,7 +501,7 @@ def calc(param):
         # bottom of page 17 and 18 in [end25]
         invK = la.inv(matK)
         detK = la.det(matK)
-        U -= 0.25 * np.dot(matP, np.dot(invK, np.transpose(matP)))
+        U -= 0.25 * matP @ invK @ np.transpose(matP)
         R0 *= np.pi**3. / (64. * detK)
 
         if param["sample_shape"] == "spherical":
@@ -548,15 +547,15 @@ def calc(param):
     R = U
     # linear and constant part of quadric (V and W in [eck14], equ. 2.2 in [end25])
     sample_pos = np.array([ param["pos_x"],  param["pos_y"], param["pos_z"] ])
-    sample_pos_rot = np.dot(np.transpose(Dalph_i), sample_pos)  # thanks to M. Enderle for pointing this out
-    res["reso_v"] = np.dot(matP, sample_pos_rot)
-    res["reso_s"] = np.dot(sample_pos_rot, np.dot(matK, sample_pos_rot))
+    sample_pos_rot = np.transpose(Dalph_i) @ sample_pos  # thanks to M. Enderle for pointing this out
+    res["reso_v"] = matP @ sample_pos_rot
+    res["reso_s"] = sample_pos_rot @ matK @ sample_pos_rot
 
 
     if param["mirror_Qperp"] and param["sample_sense"] < 0.:
         # mirror Q_perp
         matMirror = helpers.mirror_matrix(len(R), 1)
-        R = np.dot(np.dot(np.transpose(matMirror), R), matMirror)
+        R = np.transpose(matMirror) @ R @ matMirror
         res["reso_v"][1] = -res["reso_v"][1]
 
 

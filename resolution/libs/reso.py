@@ -271,7 +271,7 @@ def plot_ellipses(ellis, Qs = np.array([]), Qmean = None, centre_on_Q = False,
 
 
     ellfkt = lambda rad, rot, phi, Qmean2d : \
-        np.dot(rot, np.array([ rad[0]*np.cos(phi), rad[1]*np.sin(phi) ])) + Qmean2d
+        rot @ np.array([ rad[0]*np.cos(phi), rad[1]*np.sin(phi) ]) + Qmean2d
 
 
     # 2d plots
