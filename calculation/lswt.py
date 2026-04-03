@@ -56,7 +56,7 @@ def init(sites, couplings, verbose = False):
 		print_infos("\nJ_real =\n%s" % coupling["J_real"])
 
 
-# get the energies of the dispersion at the momentum transfer Qvec
+# get the energies and neutron spectral weights of the dispersion at the momentum transfer Qvec
 def get_energies(Qvec, sites, couplings):
 	num_sites = len(sites)
 	J_fourier = np.zeros((num_sites, num_sites, 3, 3), dtype = complex)
