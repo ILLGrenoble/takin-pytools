@@ -67,7 +67,7 @@ def get_energies(Qvec, sites, couplings):
 		J_real = coupling["J_real"]
 		site1, site2 = coupling["sites"]
 
-		J_ft = J_real * np.exp(-1j * 2.*np.pi * dist @ Qvec)
+		J_ft = J_real * np.exp(-2j*np.pi * dist @ Qvec)
 		J_fourier[site1, site2] += J_ft
 		J_fourier[site2, site1] += J_ft.transpose().conj()
 		J0_fourier[site1, site2] += J_real
