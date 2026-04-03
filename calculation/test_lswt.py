@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 num_Q_points = 1024   # number of Q points to calculate
 only_pos_E   = True   # hide magnon annihilation?
 verbose      = False  # debug output
+weight_scale = 4.
 
 
 def calc_dispersion(is_ferromagnetic = True):
@@ -38,7 +39,7 @@ def calc_dispersion(is_ferromagnetic = True):
 	if is_ferromagnetic:  # ferromagnetic dispersion
 		title = "Ferromagnetic"
 		sites = [
-			{ "S" : 1., "Sdir" : [ 0, 0, 1 ] },
+			{ "S" : 1., "Sdir" : [ 0, 0, 1 ], "pos" : [ 0, 0, 0 ] },
 		]
 		couplings = [
 			{ "sites" : [ 0, 0 ], "J" : -1., "dist" : [ 1, 0, 0 ] },
@@ -46,8 +47,8 @@ def calc_dispersion(is_ferromagnetic = True):
 	else:  # antiferromagnetic dispersion
 		title = "Antiferromagnetic"
 		sites = [
-			{ "S" : 1., "Sdir" : [ 0, 0, +1 ] },
-			{ "S" : 1., "Sdir" : [ 0, 0, -1 ] },
+			{ "S" : 1., "Sdir" : [ 0, 0, +1 ], "pos" : [ 0, 0, 0 ] },
+			{ "S" : 1., "Sdir" : [ 0, 0, -1 ], "pos" : [ 1, 0, 0 ] },
 		]
 		couplings = [
 			{ "sites" : [ 0, 1 ], "J" : 1., "dist" : [ 0, 0, 0 ] },
@@ -57,23 +58,23 @@ def calc_dispersion(is_ferromagnetic = True):
 	lswt.init(sites, couplings, verbose)
 
 	# plot a dispersion branch
-	hs = []
-	Es = []
+	hs, Es, ws = [], [], []
 	for h in np.linspace(-1, 1, num_Q_points):
 		try:
 			Qvec = np.array([ h, 0, 0 ])
-			for E in lswt.get_energies(Qvec, sites, couplings):
+			for E, w in zip(*lswt.get_energies(Qvec, sites, couplings)):
 				if only_pos_E and E < 0.:
 					continue
 				hs.append(h)
 				Es.append(E)
+				ws.append(w * weight_scale)
 		except la.LinAlgError:
 			pass
 
 	plt.plot()
 	plt.xlabel("h (rlu)")
 	plt.ylabel("E (meV)")
-	plt.scatter(hs, Es, marker = '.', label = title)
+	plt.scatter(hs, Es, marker = '.', s = ws, label = title)
 
 
 print("Calculating ferromagnetic dispersion...")

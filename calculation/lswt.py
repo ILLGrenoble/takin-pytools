@@ -7,6 +7,7 @@
 #
 
 import numpy as np, numpy.linalg as la
+import itertools as iter
 
 
 # debug output
@@ -36,8 +37,7 @@ def init(sites, couplings, verbose = False):
 			c = 1.    # spin and z axis parallel
 		elif np.allclose(Sdir, -zdir):
 			c = -1.   # spin and z axis anti-parallel
-		else:
-			# sine and cosine of the angle between spin and z axis
+		else:  # sine and cosine of the angle between spin and z axis
 			rotaxis = np.cross(Sdir, zdir)
 			s = la.norm(rotaxis)
 			c = Sdir @ zdir
@@ -75,24 +75,46 @@ def get_energies(Qvec, sites, couplings):
 	print_infos("\n\nQ = %s\nJ_fourier =\n%s\n\nJ0_fourier =\n%s" % (Qvec, J_fourier, J0_fourier))
 
 	H = np.zeros((2*num_sites, 2*num_sites), dtype = complex)
-	for i in range(num_sites):
+	for i, j in iter.product(range(num_sites), range(num_sites)):
 		S_i, u_i, v_i = sites[i]["S"], sites[i]["u"], sites[i]["v"]
+		S_j, u_j, v_j = sites[j]["S"], sites[j]["u"], sites[j]["v"]
+		S = 0.5 * np.sqrt(S_i * S_j)
 
-		for j in range(num_sites):
-			S_j, u_j, v_j = sites[j]["S"], sites[j]["u"], sites[j]["v"]
-			S = 0.5 * np.sqrt(S_i * S_j)
-
-			H[i, j] += S * u_i @ J_fourier[i, j] @ u_j.conj()
-			H[i, i] -= S_j * v_i @ J0_fourier[i, j] @ v_j
-			H[num_sites + i, num_sites + j] += S * u_i.conj() @ J_fourier[i, j] @ u_j
-			H[num_sites + i, num_sites + i] -= S_j * v_i @ J0_fourier[i, j] @ v_j
-			H[i, num_sites + j] += S * u_i @ J_fourier[i, j] @ u_j
-			H[num_sites + i, j] += (S * u_j @ J_fourier[j, i] @ u_i).conj()
+		H[            i,             j] +=  S   * u_i        @ J_fourier[i, j]  @ u_j.conj()
+		H[            i,             i] -=  S_j * v_i        @ J0_fourier[i, j] @ v_j
+		H[num_sites + i, num_sites + j] +=  S   * u_i.conj() @ J_fourier[i, j]  @ u_j
+		H[num_sites + i, num_sites + i] -=  S_j * v_i        @ J0_fourier[i, j] @ v_j
+		H[            i, num_sites + j] +=  S   * u_i        @ J_fourier[i, j]  @ u_j
+		H[num_sites + i,             j] += (S   * u_j        @ J_fourier[j, i]  @ u_i).conj()
 
 	C = la.cholesky(H)
 	signs = np.diag(np.concatenate((np.repeat(1, num_sites), np.repeat(-1, num_sites))))
-	H_trafo = C.transpose().conj() @ (signs @ C)
+	H_trafo = C.transpose().conj() @ signs @ C
 
-	Es = np.real(la.eigvals(H_trafo))
+	Es, states = la.eigh(H_trafo)
+	Es, states = np.flip(Es), np.flip(states, axis = 1)  # sort in descending order
 	print_infos("\nH =\n%s\nC =\n%s\nH_trafo =\n%s\nEs = %s" % (H, C, H_trafo, Es))
-	return Es
+
+	boson_ops = la.inv(C).transpose() @ states @ (np.sqrt(signs @ (states.transpose().conj() @ H_trafo @ states)))
+	S_mats = np.zeros((num_sites*2, 3, 3), dtype = complex)
+	for x, y in iter.product(range(3), range(3)):
+		M = np.zeros((2*num_sites, 2*num_sites), dtype = complex)
+		for i, j in iter.product(range(num_sites), range(num_sites)):
+			S_i, u_i = sites[i]["S"], -2. * sites[i]["u"]
+			S_j, u_j = sites[j]["S"], -2. * sites[j]["u"]
+			S = np.sqrt(S_i * S_j)
+			e = np.exp(2j*np.pi * Qvec @ (np.array(sites[j]["pos"]) - np.array(sites[i]["pos"])))
+
+			M[            i,             j] = e * S * u_i[x]        * u_j[y].conj()
+			M[            i, num_sites + j] = e * S * u_i[x]        * u_j[y]
+			M[num_sites + i,             j] = e * S * u_i[x].conj() * u_j[y].conj()
+			M[num_sites + i, num_sites + j] = e * S * u_i[x].conj() * u_j[y]
+
+		M = boson_ops.transpose().conj() @ M @ boson_ops
+		for E_idx in range(num_sites * 2):
+			S_mats[E_idx, x, y] += M[E_idx, E_idx] / (2. * num_sites)
+
+	proj = np.eye(3) - np.outer(Qvec, Qvec) / la.norm(Qvec)**2.
+	weights = [ np.abs((proj @ S_mats[E_idx, :, :]).trace().real) for E_idx in range(2*num_sites) ]
+
+	return Es, weights
