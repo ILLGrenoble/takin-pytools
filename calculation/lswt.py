@@ -93,7 +93,6 @@ def get_energies(Qvec, sites, couplings):
 
 	Es, states = la.eigh(H_trafo)
 	Es, states = np.flip(Es), np.flip(states, axis = 1)  # sort in descending order
-	print_infos("\nH =\n%s\nC =\n%s\nH_trafo =\n%s\nEs = %s" % (H, C, H_trafo, Es))
 
 	boson_ops = la.inv(C).transpose().conj() @ states @ (np.sqrt(signs @ (states.transpose().conj() @ H_trafo @ states)))
 	S_mats = np.zeros((num_sites*2, 3, 3), dtype = complex)
@@ -115,6 +114,7 @@ def get_energies(Qvec, sites, couplings):
 			S_mats[E_idx, x, y] += M[E_idx, E_idx] / (2. * num_sites)
 
 	proj = np.eye(3) - np.outer(Qvec, Qvec) / la.norm(Qvec)**2.
-	weights = [ np.abs((proj @ S_mats[E_idx, :, :]).trace().real) for E_idx in range(2*num_sites) ]
+	weights = np.array([ np.abs((proj @ S_mats[E_idx, :, :]).trace().real) for E_idx in range(2*num_sites) ])
+	print_infos("\nH =\n%s\nC =\n%s\nH_trafo =\n%s\nEs = %s\nws = %s" % (H, C, H_trafo, Es, weights))
 
 	return Es, weights
