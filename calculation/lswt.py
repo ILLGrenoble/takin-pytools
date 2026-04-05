@@ -81,20 +81,19 @@ def get_energies(Qvec, sites, couplings):
 		S = 0.5 * np.sqrt(S_i * S_j)
 
 		H[            i,             j] +=  S   * u_i        @ J_fourier[i, j]  @ u_j.conj()
-		H[            i,             i] -=  S_j * v_i        @ J0_fourier[i, j] @ v_j
-		H[num_sites + i, num_sites + j] +=  S   * u_i.conj() @ J_fourier[i, j]  @ u_j
-		H[num_sites + i, num_sites + i] -=  S_j * v_i        @ J0_fourier[i, j] @ v_j
 		H[            i, num_sites + j] +=  S   * u_i        @ J_fourier[i, j]  @ u_j
 		H[num_sites + i,             j] += (S   * u_j        @ J_fourier[j, i]  @ u_i).conj()
+		H[num_sites + i, num_sites + j] +=  S   * u_i.conj() @ J_fourier[i, j]  @ u_j
+		H[            i,             i] -=  S_j * v_i        @ J0_fourier[i, j] @ v_j
+		H[num_sites + i, num_sites + i] -=  S_j * v_i        @ J0_fourier[i, j] @ v_j
 
 	C = la.cholesky(H)
-	signs = np.diag(np.concatenate((np.repeat(1, num_sites), np.repeat(-1, num_sites))))
+	signs = np.diag(np.concatenate((np.repeat(1., num_sites), np.repeat(-1., num_sites))))
 	H_trafo = C.transpose().conj() @ signs @ C
-
 	Es, states = la.eigh(H_trafo)
 	Es, states = np.flip(Es), np.flip(states, axis = 1)  # sort in descending order
 
-	boson_ops = la.inv(C).transpose().conj() @ states @ (np.sqrt(signs @ (states.transpose().conj() @ H_trafo @ states)))
+	ops = la.inv(C).transpose().conj() @ states @ np.sqrt(signs @ states.transpose().conj() @ H_trafo @ states)
 	S_mats = np.zeros((num_sites*2, 3, 3), dtype = complex)
 	for x, y in iter.product(range(3), range(3)):
 		M = np.zeros((2*num_sites, 2*num_sites), dtype = complex)
@@ -109,11 +108,11 @@ def get_energies(Qvec, sites, couplings):
 			M[num_sites + i,             j] = e * S * u_i[x].conj() * u_j[y].conj()
 			M[num_sites + i, num_sites + j] = e * S * u_i[x].conj() * u_j[y]
 
-		M = boson_ops.transpose().conj() @ M @ boson_ops
+		M = ops.transpose().conj() @ M @ ops
 		for E_idx in range(num_sites * 2):
 			S_mats[E_idx, x, y] += M[E_idx, E_idx] / (2. * num_sites)
 
-	proj = np.eye(3) - np.outer(Qvec, Qvec) / la.norm(Qvec)**2.
+	proj = np.eye(3) - np.outer(Qvec, Qvec) / (Qvec @ Qvec)
 	weights = np.array([ np.abs((proj @ S_mats[E_idx, :, :]).trace().real) for E_idx in range(2*num_sites) ])
 	print_infos("\nH =\n%s\nC =\n%s\nH_trafo =\n%s\nEs = %s\nws = %s" % (H, C, H_trafo, Es, weights))
 
