@@ -12,8 +12,7 @@ import itertools as iter
 # debug output
 verbose_print = False    # print intermediate results
 def print_infos(str):
-	if verbose_print:
-		print(str)
+	if verbose_print: print(str)
 
 # calculate magnetic structure properties
 def init(sites, couplings, verbose = False):
