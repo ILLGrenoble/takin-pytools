@@ -9,13 +9,11 @@
 import numpy as np, numpy.linalg as la
 import itertools as iter
 
-
 # debug output
 verbose_print = False    # print intermediate results
 def print_infos(str):
 	if verbose_print:
 		print(str)
-
 
 # calculate magnetic structure properties
 def init(sites, couplings, verbose = False):
@@ -54,7 +52,6 @@ def init(sites, couplings, verbose = False):
 		if "DMI" in coupling: coupling["J_real"] += skew(coupling["DMI"])
 		if "gen" in coupling: coupling["J_real"] += coupling["gen"]
 		print_infos("\nJ_real =\n%s" % coupling["J_real"])
-
 
 # get the energies and neutron spectral weights of the dispersion at the momentum transfer Qvec
 def get_energies(Qvec, sites, couplings):
