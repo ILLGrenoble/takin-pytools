@@ -25,15 +25,13 @@ def init(sites, couplings, verbose = False):
 	
 	# calculate spin rotations towards ferromagnetic order along [001]
 	for site in sites:
-		zdir = np.array([ 0., 0., 1. ])
+		zdir, rotaxis = np.array([ 0., 0., 1. ]), np.array([ 0., 1., 0. ])
 		Sdir = np.array(site["Sdir"]) / la.norm(site["Sdir"])
-		rotaxis = np.array([ 0., 1., 0. ])
-		s = 0.
 
 		if np.allclose(Sdir, zdir):
-			c = 1.    # spin and z axis parallel
+			c, s = +1., 0.    # spin and z axis parallel
 		elif np.allclose(Sdir, -zdir):
-			c = -1.   # spin and z axis anti-parallel
+			c, s = -1., 0.   # spin and z axis anti-parallel
 		else:  # sine and cosine of the angle between spin and z axis
 			rotaxis = np.cross(Sdir, zdir)
 			s = la.norm(rotaxis)
@@ -42,8 +40,7 @@ def init(sites, couplings, verbose = False):
 
 		# rotation via rodrigues' formula, see (Arens 2015), p. 718 and p. 816
 		rot = (1. - c) * np.outer(rotaxis, rotaxis) + np.diag([ c, c, c ]) - skew(rotaxis)*s
-		site["u"] = rot[0, :] + 1j * rot[1, :]
-		site["v"] = rot[2, :]
+		site["u"], site["v"] = rot[0, :] + 1j * rot[1, :], rot[2, :]
 		print_infos("\nrot = \n%s\nu = %s\nv = %s" % (rot, site["u"], site["v"]))
 
 	for coupling in couplings:
