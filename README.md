@@ -9,12 +9,13 @@ Python helper tools for [Takin](https://github.com/illgrenoble/takin) and [Magpi
 ## Tools
  - [resolution/calc_reso.py](https://github.com/ILLGrenoble/takin-pytools/blob/main/resolution/calc_reso.py) is a TAS and TOF resolution calculator.
  - [resolution/calc_cov.py](https://github.com/ILLGrenoble/takin-pytools/blob/main/resolution/calc_cov.py) calculates the instrumental resolution from Monte Carlo events.
+ - [tas/tasgui.py](https://github.com/ILLGrenoble/takin-pytools/blob/main/tas/tasgui.py) is a graphical tool that calculates TAS angles.
  - [conversion/nxsprint.py](https://github.com/ILLGrenoble/takin-pytools/blob/main/conversion/nxsprint.py) converts Nexus TAS scan files into the old text format.
 
 
 ## Libraries
- - [calculation/tas.py](https://github.com/ILLGrenoble/takin-pytools/blob/main/calculation/tas.py) is a library and GUI that calculates TAS angles.
- - [calculation/lswt.py](https://github.com/ILLGrenoble/takin-pytools/blob/main/calculation/lswt.py) is a complete linear spin-wave library in less than 115 lines of code.
+ - [tas/tas.py](https://github.com/ILLGrenoble/takin-pytools/blob/main/tas/tas.py) is a library that calculates TAS angles.
+ - [spinwaves/lswt.py](https://github.com/ILLGrenoble/takin-pytools/blob/main/spinwaves/lswt.py) is a complete linear spin-wave library in less than 115 lines of code.
 
 
 ## Citation

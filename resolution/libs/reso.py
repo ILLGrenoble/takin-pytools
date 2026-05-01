@@ -205,9 +205,13 @@ def calc_ellipses(Qres_Q, verbose = True):
         [fwhms_proj, angles_proj, rot_proj, evals_proj] = descr_ellipse(Qres_proj)
 
         results.append({
-            "fwhms" : fwhms, "angles" : angles, "rot" : rot, "evals" : evals, "offs" : zero,
+            # sliced
+            "fwhms" : fwhms, "angles" : angles, "rot" : rot, "evals" : evals,
+            "offs" : zero, "cont" : 1.,
+            # projected
             "fwhms_proj" : fwhms_proj, "angles_proj" : angles_proj, "rot_proj" : rot_proj,
             "evals_proj" : evals_proj, "offs_proj" : zero,
+            # 4d
             "fwhms_4d" : fwhms_4d, "rot_4d" : rot_4d, "evals_4d" : evals_4d, })
 
     if verbose:
@@ -278,27 +282,37 @@ def calc_ellipses_shifted(Qres_Q, Qres_v, verbose = True):
     ]
 
     for perm in perms:
-        # ellipse mid-point
-        x_mid = - 0.5 * la.inv(Qres_Q) @ Qres_v
-        x_mid0 = x_mid[0:2]
-        x_mid2 = x_mid[2:4]
-
         Q_trafo = perm @ Qres_Q @ np.transpose(perm)
         Q00 = Q_trafo[0:2, 0:2]
         Q02 = Q_trafo[0:2, 2:4]
         Q22 = Q_trafo[2:4, 2:4]
 
+        # ellipse mid-points
+        x_mid_proj = -0.5 * perm @ la.inv(Qres_Q) @ Qres_v
+        x_mid_proj0 = x_mid_proj[0:2]
+        x_mid_proj2 = x_mid_proj[2:4]
+        x_mid_sliced = x_mid_proj0 + la.inv(Q00) @ Q02 @ x_mid_proj2
+        x_mid_sliced0 = x_mid_sliced[0:2]
+        x_mid_sliced2 = x_mid_sliced[2:4]
+
         # sliced and projected 2d ellipses
         Qres_sliced = Q22 - np.transpose(Q02) @ la.inv(Q00) @ Q02
         Qres_proj   = Q00 - Q02 @ la.inv(Q22) @ np.transpose(Q02)
+
+        # scaling for the contour line
+        cont_sliced = 1. / np.exp(x_mid_proj2 @ Qres_sliced @ x_mid_proj2)
 
         [fwhms, angles, rot, evals] = descr_ellipse(Q00)
         [fwhms_proj, angles_proj, rot_proj, evals_proj] = descr_ellipse(Qres_proj)
 
         results.append({
-            "fwhms" : fwhms, "angles" : angles, "rot" : rot, "evals" : evals, "offs" : x_mid0,
+            # sliced
+            "fwhms" : fwhms, "angles" : angles, "rot" : rot, "evals" : evals,
+            "offs" : x_mid_sliced0, "cont" : cont_sliced,
+            # projected
             "fwhms_proj" : fwhms_proj, "angles_proj" : angles_proj, "rot_proj" : rot_proj,
-            "evals_proj" : evals_proj, "offs_proj" : x_mid0,
+            "evals_proj" : evals_proj, "offs_proj" : x_mid_proj0,
+            # 4d
             "fwhms_4d" : fwhms_4d, "rot_4d" : rot_4d, "evals_4d" : evals_4d, })
 
     if verbose:
@@ -381,7 +395,7 @@ def plot_ellipses(ellis, Qs = np.array([]), Qmean = None, centre_on_Q = False,
 
         phi = np.linspace(0, 2.*np.pi, ellipse_points)
 
-        ell_QxE = ellfkt(ellis[ellidx]["fwhms"]*0.5, ellis[ellidx]["rot"], phi, QxE, ellis[ellidx]["offs"])
+        ell_QxE = ellfkt(ellis[ellidx]["fwhms"]*0.5*ellis[ellidx]["cont"], ellis[ellidx]["rot"], phi, QxE, ellis[ellidx]["offs"])
         ell_QxE_proj = ellfkt(ellis[ellidx]["fwhms_proj"]*0.5, ellis[ellidx]["rot_proj"], phi, QxE, ellis[ellidx]["offs_proj"])
         ellplots.append({"sliced":ell_QxE, "proj":ell_QxE_proj})
 

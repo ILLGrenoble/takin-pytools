@@ -34,7 +34,7 @@ sys.path.append(os.path.dirname(__file__) + "/../..")
 
 import numpy as np
 import numpy.linalg as la
-import calculation.tas as tas
+import tas.tas as tas
 import libs.helpers as helpers
 import algos.vio_ext as vce2
 

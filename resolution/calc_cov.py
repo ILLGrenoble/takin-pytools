@@ -238,6 +238,7 @@ def run_cov():
     args.add_argument("--Q", default=options["Q_start_idx"], type=int, nargs="?", help="index of Q vector's first column in QE file")
     args.add_argument("--E", default=options["E_idx"], type=int, nargs="?", help="index of E column in QE file")
     args.add_argument("--QEfile", action="store_true", help="use the QE file type")
+    args.add_argument("--elli_method", default="normal", type=str, help="ellipse calculation method to use (normal/shifted)")
     args.add_argument("--centreonQ", action="store_true", help="centre plots on mean Q")
     args.add_argument("--noverbose", action="store_true", help="don't show console logs")
     args.add_argument("--noplot", action="store_true", help="don't show any plot windows")
@@ -324,7 +325,13 @@ def run_cov():
         Qperp = np.array([])
 
     [Qres, Q4, Qmean] = calc_covar(Q, E, w, Qpara, Qperp)
-    calcedellis = reso.calc_ellipses(Qres, verbose = options["verbose"])
+
+    if argv.elli_method == "normal":
+        calcedellis = reso.calc_ellipses(Qres, verbose = options["verbose"])
+    elif argv.elli_method == "shifted":
+        calcedellis = reso.calc_ellipses_shifted(Qres, np.array([0., 0., 0., 0.]), verbose = options["verbose"])
+    else:
+        raise ValueError("Invalid ellipse calculation method selected.")
 
     if options["plot_results"] or outfile!="":
         reso.plot_ellipses(calcedellis, plot_file = outfile, Qs = Q4, Qmean = Qmean,
