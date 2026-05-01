@@ -52,6 +52,9 @@ params = {
     # resolution method, "eck", "eck_ext", "pop", "cn", or "vio"
     "reso_method" : "pop",
 
+    # ellipse calculation method, "normal" or "shifted"
+    "elli_method" : "normal",
+
     # scattering triangle
     "ki" : 1.4,
     "kf" : 1.4,
@@ -187,6 +190,8 @@ argparser.add_argument("-p", "--plot", action = "store_true",
     help = "plot results on screen")
 argparser.add_argument("-m", "--reso_method", default = None, type = str,
     help = "resolution method to use (cn/pop/eck/eck_ext/vio)")
+argparser.add_argument("--elli_method", default = None, type = str,
+    help = "ellipse calculation method to use (normal/shifted)")
 argparser.add_argument("--kf_vert", default = None, action = "store_true",
     help = "scatter vertically in the kf axis (only for Eckold-Sobolev method)")
 argparser.add_argument("--ki", default = None, type = float,
@@ -276,6 +281,8 @@ params["verbose"] = not parsedargs.silent
 
 if parsedargs.reso_method != None:
     params["reso_method"] = parsedargs.reso_method
+if parsedargs.elli_method != None:
+    params["elli_method"] = parsedargs.elli_method
 
 if parsedargs.kf_vert != None:
     params["kf_vert"] = parsedargs.kf_vert
@@ -404,21 +411,21 @@ import algos.eck_ext as eck_ext
 import algos.vio as vio
 
 if params["reso_method"] == "eck":
-    log("\nCalculating using Eckold-Sobolev method. Scattering %s in kf." %
+    log("\nCalculating resolution using Eckold-Sobolev method. Scattering %s in kf." %
         ("vertically" if params["kf_vert"] else "horizontally"))
     res = eck.calc(params)
 elif params["reso_method"] == "eck_ext":
-    log("\nCalculating using extended Eckold-Sobolev method. Scattering %s in kf." %
+    log("\nCalculating resolution using extended Eckold-Sobolev method. Scattering %s in kf." %
         ("vertically" if params["kf_vert"] else "horizontally"))
     res = eck_ext.calc(params)
 elif params["reso_method"] == "pop":
-    log("\nCalculating using Popovici method.")
+    log("\nCalculating resolution using Popovici method.")
     res = pop.calc(params, False)
 elif params["reso_method"] == "cn":
-    log("\nCalculating using Cooper-Nathans method.")
+    log("\nCalculating resolution using Cooper-Nathans method.")
     res = pop.calc(params, True)
 elif params["reso_method"] == "vio":
-    log("\nCalculating using Violini method.")
+    log("\nCalculating resolution using Violini method.")
     res = vio.calc(params)
 else:
     raise ValueError("ResPy: Invalid resolution calculation method selected.")
@@ -438,7 +445,14 @@ log("Resolution scalar: %g" % res["reso_s"])
 # -----------------------------------------------------------------------------
 # describe and plot ellipses
 # -----------------------------------------------------------------------------
-ellipses = reso.calc_ellipses(res["reso"], params["verbose"])
+if params["elli_method"] == "normal":
+    log("\nCalculating ellipses using standard method.")
+    ellipses = reso.calc_ellipses(res["reso"], params["verbose"])
+elif params["elli_method"] == "shifted":
+    log("\nCalculating ellipses using shifted method.")
+    ellipses = reso.calc_ellipses_shifted(res["reso"], res["reso_v"], params["verbose"])
+else:
+    raise ValueError("ResPy: Invalid ellipse calculation method selected.")
 
 
 if show_plots or plot_file != "":

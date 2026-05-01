@@ -6,7 +6,8 @@
 # @date mar-2019
 # @license see 'LICENSE' file
 #
-# @desc for algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014), doi: 10.1016/j.nima.2014.03.019
+# @desc for original algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014), doi: 10.1016/j.nima.2014.03.019
+# @desc for extended algorithm: [end25] M. Enderle, personal communication (8/dec/2025)
 # @desc see covariance calculations: https://code.ill.fr/scientific-software/takin/mag-core/blob/master/tools/tascalc/cov.py
 # @desc see also: https://github.com/McStasMcXtrace/McCode/blob/master/tools/Legacy-Perl/mcresplot.pl
 #
@@ -183,9 +184,10 @@ def calc_ellipses(Qres_Q, verbose = True):
     # 4d ellipsoid
     [fwhms_4d, _angles_4d, rot_4d, evals_4d] = descr_ellipse(Qres_Q)
 
-    axes_to_delete = [ [2, 1], [2, 0], [1, 0], [3, 2] ]
+    axes_to_delete = [ [2, 1], [2, 0], [0, 0], [3, 2] ]
     slice_first = [ True, True, True, False ]
     results = []
+    zero = np.array([ 0., 0. ])
 
     for ellidx in range(len(axes_to_delete)):
         # sliced 2d ellipse
@@ -203,8 +205,9 @@ def calc_ellipses(Qres_Q, verbose = True):
         [fwhms_proj, angles_proj, rot_proj, evals_proj] = descr_ellipse(Qres_proj)
 
         results.append({
-            "fwhms" : fwhms, "angles" : angles, "rot" : rot, "evals" : evals,
-            "fwhms_proj" : fwhms_proj, "angles_proj" : angles_proj, "rot_proj" : rot_proj, "evals_proj" : evals_proj,
+            "fwhms" : fwhms, "angles" : angles, "rot" : rot, "evals" : evals, "offs" : zero,
+            "fwhms_proj" : fwhms_proj, "angles_proj" : angles_proj, "rot_proj" : rot_proj,
+            "evals_proj" : evals_proj, "offs_proj" : zero,
             "fwhms_4d" : fwhms_4d, "rot_4d" : rot_4d, "evals_4d" : evals_4d, })
 
     if verbose:
@@ -252,6 +255,86 @@ def calc_ellipses(Qres_Q, verbose = True):
 
 
 #
+# describes the ellipsoid by a principal axis trafo and by 2d cuts,
+# also taking account of the shift due to the resolution vector
+# (see [end25], pp. 20-22, with modifications to the formulas)
+#
+def calc_ellipses_shifted(Qres_Q, Qres_v, verbose = True):
+    results = []
+
+    # 4d ellipsoid
+    [fwhms_4d, _angles_4d, rot_4d, evals_4d] = descr_ellipse(Qres_Q)
+
+    Q_para_idx = [ 1., 0., 0., 0. ]
+    Q_perp_idx = [ 0., 1., 0., 0. ]
+    Q_up_idx   = [ 0., 0., 1., 0. ]
+    E_idx      = [ 0., 0., 0., 1. ]
+
+    perms = [
+        np.array([ Q_para_idx, E_idx,      Q_up_idx,   Q_perp_idx ]),
+        np.array([ Q_perp_idx, E_idx,      Q_up_idx,   Q_para_idx ]),
+        np.array([ Q_up_idx,   E_idx,      Q_para_idx, Q_perp_idx ]),
+        np.array([ Q_para_idx, Q_perp_idx, Q_up_idx,   E_idx      ]),
+    ]
+
+    for perm in perms:
+        # ellipse mid-point
+        x_mid = - 0.5 * la.inv(Qres_Q) @ Qres_v
+        x_mid0 = x_mid[0:2]
+        x_mid2 = x_mid[2:4]
+
+        Q_trafo = perm @ Qres_Q @ np.transpose(perm)
+        Q00 = Q_trafo[0:2, 0:2]
+        Q02 = Q_trafo[0:2, 2:4]
+        Q22 = Q_trafo[2:4, 2:4]
+
+        # sliced and projected 2d ellipses
+        Qres_sliced = Q22 - np.transpose(Q02) @ la.inv(Q00) @ Q02
+        Qres_proj   = Q00 - Q02 @ la.inv(Q22) @ np.transpose(Q02)
+
+        [fwhms, angles, rot, evals] = descr_ellipse(Q00)
+        [fwhms_proj, angles_proj, rot_proj, evals_proj] = descr_ellipse(Qres_proj)
+
+        results.append({
+            "fwhms" : fwhms, "angles" : angles, "rot" : rot, "evals" : evals, "offs" : x_mid0,
+            "fwhms_proj" : fwhms_proj, "angles_proj" : angles_proj, "rot_proj" : rot_proj,
+            "evals_proj" : evals_proj, "offs_proj" : x_mid0,
+            "fwhms_4d" : fwhms_4d, "rot_4d" : rot_4d, "evals_4d" : evals_4d, })
+
+    if verbose:
+        print()
+        print("4d resolution ellipsoid principal axes fwhm lengths:\n%s" % fwhms_4d)
+        print("4d resolution ellipsoid diagonal elements fwhm (coherent-elastic scattering) lengths:\n%s" \
+            % (1./np.sqrt(np.abs(np.diag(Qres_Q))) * helpers.sig2fwhm))
+        print()
+
+        fwhms_coh = calc_coh_fwhms(Qres_Q)
+        fwhms_inc = calc_incoh_fwhms(Qres_Q)
+
+        print("Eigenvalues: %s" % evals_4d)
+        print("Eigensystem (Q_para [1/A], Q_perp [1/A], Q_up [1/A], E [meV]):\n%s" % rot_4d)
+        print("Note: To convert these eigenvalues to 1/A or meV (in fwhm), use: 1/sqrt(eval) * 2*sqrt(2*log(2)),")
+        print("      these correspond to the values given above (\"4d resolution ellipsoid principal axes fwhm lengths\").")
+        print()
+        print("Principal axes fwhms: %s" % fwhms)
+        print("Coherent-elastic fwhms: %s" % fwhms_coh)
+        print("Incoherent-elastic fwhms: %s" % fwhms_inc)
+        print()
+
+        print("Qx,E sliced ellipse fwhm and slope angle: %s, %.4f" % (results[0]["fwhms"], results[0]["angles"][0]))
+        print("Qy,E sliced ellipse fwhm and slope angle: %s, %.4f" % (results[1]["fwhms"], results[1]["angles"][0]))
+        print("Qz,E sliced ellipse fwhm and slope angle: %s, %.4f" % (results[2]["fwhms"], results[2]["angles"][0]))
+        print("Qx,Qy sliced ellipse fwhm and slope angle: %s, %.4f" % (results[3]["fwhms"], results[3]["angles"][0]))
+        print()
+        print("Qx,E projected ellipse fwhm and slope angle: %s, %.4f" % (results[0]["fwhms_proj"], results[0]["angles_proj"][0]))
+        print("Qy,E projected ellipse fwhm and slope angle: %s, %.4f" % (results[1]["fwhms_proj"], results[1]["angles_proj"][0]))
+        print("Qz,E projected ellipse fwhm and slope angle: %s, %.4f" % (results[2]["fwhms_proj"], results[2]["angles_proj"][0]))
+        print("Qx,Qy projected ellipse fwhm and slope angle: %s, %.4f" % (results[3]["fwhms_proj"], results[3]["angles_proj"][0]))
+
+    return results
+
+
+#
 # shows the 2d ellipses
 #
 def plot_ellipses(ellis, Qs = np.array([]), Qmean = None, centre_on_Q = False,
@@ -270,8 +353,8 @@ def plot_ellipses(ellis, Qs = np.array([]), Qmean = None, centre_on_Q = False,
     themarker = "."
 
 
-    ellfkt = lambda rad, rot, phi, Qmean2d : \
-        rot @ np.array([ rad[0]*np.cos(phi), rad[1]*np.sin(phi) ]) + Qmean2d
+    ellfkt = lambda rad, rot, phi, Qmean2d, offs : \
+        rot @ np.array([ rad[0]*np.cos(phi) + offs[0], rad[1]*np.sin(phi) + offs[1] ]) + Qmean2d
 
 
     # 2d plots
@@ -290,7 +373,7 @@ def plot_ellipses(ellis, Qs = np.array([]), Qmean = None, centre_on_Q = False,
     ellplots = []
     for ellidx in range(num_ellis):
         # centre plots on zero or mean Q vector ?
-        QxE = np.array([[0], [0]])
+        QxE = np.array([[0.], [0.]])
 
         if centre_on_Q and Qmean != None:
             QxE = np.array([[Qmean[coord_axes[ellidx][0]]], [Qmean[coord_axes[ellidx][0]]]])
@@ -298,8 +381,8 @@ def plot_ellipses(ellis, Qs = np.array([]), Qmean = None, centre_on_Q = False,
 
         phi = np.linspace(0, 2.*np.pi, ellipse_points)
 
-        ell_QxE = ellfkt(ellis[ellidx]["fwhms"]*0.5, ellis[ellidx]["rot"], phi, QxE)
-        ell_QxE_proj = ellfkt(ellis[ellidx]["fwhms_proj"]*0.5, ellis[ellidx]["rot_proj"], phi, QxE)
+        ell_QxE = ellfkt(ellis[ellidx]["fwhms"]*0.5, ellis[ellidx]["rot"], phi, QxE, ellis[ellidx]["offs"])
+        ell_QxE_proj = ellfkt(ellis[ellidx]["fwhms_proj"]*0.5, ellis[ellidx]["rot_proj"], phi, QxE, ellis[ellidx]["offs_proj"])
         ellplots.append({"sliced":ell_QxE, "proj":ell_QxE_proj})
 
 
