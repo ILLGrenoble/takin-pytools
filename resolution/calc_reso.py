@@ -157,7 +157,6 @@ params = {
     "dana_effic" : 1.,
 
     # off-center scattering (for eck and eck_ext)
-    # WARNING: while this is calculated, it is not yet considered in the ellipse plots
     "pos_x" : 0. * helpers.cm2A,
     "pos_y" : 0. * helpers.cm2A,
     "pos_z" : 0. * helpers.cm2A,
@@ -414,10 +413,14 @@ if params["reso_method"] == "eck":
     log("\nCalculating resolution using Eckold-Sobolev method. Scattering %s in kf." %
         ("vertically" if params["kf_vert"] else "horizontally"))
     res = eck.calc(params)
+    if parsedargs.elli_method == None:
+        params["elli_method"] = "shifted"
 elif params["reso_method"] == "eck_ext":
     log("\nCalculating resolution using extended Eckold-Sobolev method. Scattering %s in kf." %
         ("vertically" if params["kf_vert"] else "horizontally"))
     res = eck_ext.calc(params)
+    if parsedargs.elli_method == None:
+        params["elli_method"] = "shifted"
 elif params["reso_method"] == "pop":
     log("\nCalculating resolution using Popovici method.")
     res = pop.calc(params, False)

@@ -298,6 +298,9 @@ def calc_ellipses_shifted(Qres_Q, Qres_v, verbose = True):
         # sliced and projected 2d ellipses
         Qres_sliced = Q22 - np.transpose(Q02) @ la.inv(Q00) @ Q02
         Qres_proj   = Q00 - Q02 @ la.inv(Q22) @ np.transpose(Q02)
+        # this is the same as the old method:
+        #Qres_sliced = quadric_proj(quadric_proj(Q_trafo, 0), 0))
+        #Qres_proj = quadric_proj(quadric_proj(Q_trafo, 2), 2))
 
         # scaling for the contour line
         cont_sliced = 1. / np.exp(x_mid_proj2 @ Qres_sliced @ x_mid_proj2)
@@ -367,8 +370,8 @@ def plot_ellipses(ellis, Qs = np.array([]), Qmean = None, centre_on_Q = False,
     themarker = "."
 
 
-    ellfkt = lambda rad, rot, phi, Qmean2d, offs : \
-        rot @ np.array([ rad[0]*np.cos(phi) + offs[0], rad[1]*np.sin(phi) + offs[1] ]) + Qmean2d
+    ellfkt = lambda rad, rot, phi, Qmean2d : \
+        rot @ np.array([ rad[0]*np.cos(phi), rad[1]*np.sin(phi) ]) + Qmean2d
 
 
     # 2d plots
@@ -387,17 +390,21 @@ def plot_ellipses(ellis, Qs = np.array([]), Qmean = None, centre_on_Q = False,
     ellplots = []
     for ellidx in range(num_ellis):
         # centre plots on zero or mean Q vector ?
-        QxE = np.array([[0.], [0.]])
+        QxE = np.array([ [ 0. ], [ 0. ] ])
 
         if centre_on_Q and Qmean != None:
-            QxE = np.array([[Qmean[coord_axes[ellidx][0]]], [Qmean[coord_axes[ellidx][0]]]])
+            QxE += np.array([ [Qmean[coord_axes[ellidx][0]]], [Qmean[coord_axes[ellidx][0]]] ])
 
+        QxE_slice = QxE + np.array([ [ ellis[ellidx]["offs"][0]  ], [ ellis[ellidx]["offs"][1] ] ])
+        QxE_proj = QxE + np.array([ [ ellis[ellidx]["offs_proj"][0]  ], [ ellis[ellidx]["offs_proj"][1] ] ])
 
         phi = np.linspace(0, 2.*np.pi, ellipse_points)
 
-        ell_QxE = ellfkt(ellis[ellidx]["fwhms"]*0.5*ellis[ellidx]["cont"], ellis[ellidx]["rot"], phi, QxE, ellis[ellidx]["offs"])
-        ell_QxE_proj = ellfkt(ellis[ellidx]["fwhms_proj"]*0.5, ellis[ellidx]["rot_proj"], phi, QxE, ellis[ellidx]["offs_proj"])
-        ellplots.append({"sliced":ell_QxE, "proj":ell_QxE_proj})
+        ell_QxE = ellfkt(ellis[ellidx]["fwhms"]*0.5*ellis[ellidx]["cont"],
+            ellis[ellidx]["rot"], phi, QxE_slice)
+        ell_QxE_proj = ellfkt(ellis[ellidx]["fwhms_proj"]*0.5,
+            ellis[ellidx]["rot_proj"], phi, QxE_proj)
+        ellplots.append({"sliced" : ell_QxE, "proj" : ell_QxE_proj})
 
 
         subplot_QxE = fig.add_subplot(221 + ellidx)
