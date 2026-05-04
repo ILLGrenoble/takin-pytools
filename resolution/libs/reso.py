@@ -61,7 +61,7 @@ def ellipsoid_volume(mat):
         return 1./2. * np.pi**2. * V0
 
     return 0.
-    
+
 
 
 #
@@ -288,7 +288,7 @@ def calc_ellipses_shifted(Qres_Q, Qres_v, verbose = True):
         Q22 = Q_trafo[2:4, 2:4]
 
         # ellipse mid-points
-        x_mid_proj = -0.5 * perm @ la.inv(Qres_Q) @ Qres_v
+        x_mid_proj = -0.5 * np.transpose(perm) @ la.inv(Qres_Q) @ Qres_v
         x_mid_proj0 = x_mid_proj[0:2]
         x_mid_proj2 = x_mid_proj[2:4]
         x_mid_sliced = x_mid_proj0 + la.inv(Q00) @ Q02 @ x_mid_proj2
