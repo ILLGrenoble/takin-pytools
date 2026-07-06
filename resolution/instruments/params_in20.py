@@ -124,7 +124,7 @@ params = {
     "dist_hsrc_mono"   : 227.5 * helpers.cm2A,
     "dist_mono_sample" : 227.5 * helpers.cm2A,
     "dist_sample_ana"  : 105.7 * helpers.cm2A,
-    "dist_ana_det"     : 23.5  * helpers.cm2A,
+    "dist_ana_det"     : 73.5  * helpers.cm2A,
 
     # shapes
     "src_shape"    : "rectangular",  # "rectangular" or "circular"
@@ -242,7 +242,7 @@ params_fc = {
     "dist_hsrc_mono"   : 227.5 * helpers.cm2A,
     "dist_mono_sample" : 227.5 * helpers.cm2A,
     "dist_sample_ana"  : 76.3  * helpers.cm2A,
-    "dist_ana_det"     : 23.5  * helpers.cm2A,
+    "dist_ana_det"     : 73.5  * helpers.cm2A,
 
     # shapes
     "src_shape"    : "rectangular",  # "rectangular" or "circular"
