@@ -34,6 +34,7 @@ sys.path.append(".")
 import libs.tas as tas
 import libs.helpers as helpers
 import instruments.params_in20 as params_in20
+import instruments.params_thales as params_thales
 
 # requires numpy version >= 1.10
 import numpy as np
@@ -178,7 +179,7 @@ argparser = argparse.ArgumentParser(
     description = "Calculates the resolution ellipsoid of a TAS instrument.")
 
 argparser.add_argument("-i", "--instr", default = None, type = str,
-    help = "set the parameters to a pre-defined instrument (in20/in20fc)")
+    help = "set the parameters to a pre-defined instrument (in20/in20fc/thales)")
 argparser.add_argument("--silent", action = "store_true",
     help = "disable output")
 argparser.add_argument("-o", "--out_file", default = "", type = str,
@@ -271,6 +272,9 @@ if parsedargs.instr != None:
     elif parsedargs.instr == "in20fc":
         print("Loaded IN20/Flatcone default parameters.\n")
         params = params_in20.params_fc
+    elif parsedargs.instr == "thales":
+        print("Loaded Thales default parameters.\n")
+        params = params_thales.params
 
 # get parsed command-line arguments
 out_file = parsedargs.out_file
@@ -424,12 +428,18 @@ elif params["reso_method"] == "eck_ext":
 elif params["reso_method"] == "pop":
     log("\nCalculating resolution using Popovici method.")
     res = pop.calc(params, False)
+    if parsedargs.elli_method == None:
+        params["elli_method"] = "normal"
 elif params["reso_method"] == "cn":
     log("\nCalculating resolution using Cooper-Nathans method.")
     res = pop.calc(params, True)
+    if parsedargs.elli_method == None:
+        params["elli_method"] = "normal"
 elif params["reso_method"] == "vio":
     log("\nCalculating resolution using Violini method.")
     res = vio.calc(params)
+    if parsedargs.elli_method == None:
+        params["elli_method"] = "normal"
 else:
     raise ValueError("ResPy: Invalid resolution calculation method selected.")
 
