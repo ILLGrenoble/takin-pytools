@@ -29,7 +29,7 @@ def init(sites, couplings, verbose = False):
 		Sdir = np.array(site["Sdir"]) / la.norm(site["Sdir"])
 
 		if np.allclose(Sdir, zdir):
-			c, s = +1., 0.    # spin and z axis parallel
+			c, s = +1., 0.   # spin and z axis parallel
 		elif np.allclose(Sdir, -zdir):
 			c, s = -1., 0.   # spin and z axis anti-parallel
 		else:  # sine and cosine of the angle between spin and z axis
