@@ -32,10 +32,10 @@ import sys
 sys.path.append(".")
 
 import libs.tas as tas
-#import libs.helpers as helpers
+import libs.helpers as helpers
 
-#import numpy as np
-#np.set_printoptions(floatmode = "fixed",  precision = 4)
+import numpy as np
+np.set_printoptions(floatmode = "fixed",  precision = 4)
 
 
 # -----------------------------------------------------------------------------
@@ -62,6 +62,18 @@ out_file = parsedargs.out_file
 import xml.etree.ElementTree as xml
 taz = xml.parse(in_file).getroot()
 
+ki = float(taz.find("./reso/ki").text)
+kf = float(taz.find("./reso/kf").text)
+Ef = tas.k2_to_E * kf**2.
+E = float(taz.find("./reso/E").text)
+Q = float(taz.find("./reso/Q").text)
+
+dist_src_mono = float(taz.find("./reso/pop_dist_src_mono").text)
+dist_mono_sample = float(taz.find("./reso/pop_dist_mono_sample").text)
+dist_mono_monitor = float(taz.find("./reso/pop_dist_mono_monitor").text)
+dist_sample_ana = float(taz.find("./reso/pop_dist_sample_ana").text)
+dist_ana_det = float(taz.find("./reso/pop_dist_ana_det").text)
+
 sample_a = float(taz.find("./sample/a").text)
 sample_b = float(taz.find("./sample/b").text)
 sample_c = float(taz.find("./sample/c").text)
@@ -72,17 +84,13 @@ sample_mosaic = float(taz.find("./reso/sample_mosaic").text)
 sample_h = float(taz.find("./reso/pop_sample_h").text)
 sample_wq = float(taz.find("./reso/pop_sample_wq").text)
 sample_wperpq = float(taz.find("./reso/pop_sample_wperpq").text)
-sample_geo = int(taz.find("./reso/pop_sample_cuboid").text)
-if sample_geo > 0:
-    sample_geo_factor_w = 12.
-else:
-    sample_geo_factor_w = 16.
+sample_geo_factor_w = 16.
 sample_geo_factor_h = 12.
-sample_sense = int(taz.find("./reso/sample_scatter_sense").text)
-if sample_sense == 1:
+if int(taz.find("./reso/pop_sample_cuboid").text) > 0:
+    sample_geo_factor_w = 12.
+sample_sense = -1.
+if int(taz.find("./reso/sample_scatter_sense").text) == 1:
     sample_sense = 1.
-else:
-    sample_sense = -1.
 
 plane_x0 = float(taz.find("./plane/x0").text)
 plane_x1 = float(taz.find("./plane/x1").text)
@@ -93,11 +101,9 @@ plane_y2 = float(taz.find("./plane/y2").text)
 
 src_w = float(taz.find("./reso/pop_src_w").text)
 src_h = float(taz.find("./reso/pop_src_h").text)
-src_geo = int(taz.find("./reso/pop_source_rect").text)
-if src_geo > 0:
+src_geo_factor = 16.
+if int(taz.find("./reso/pop_source_rect").text) > 0:
     src_geo_factor = 12.
-else:
-    src_geo_factor = 16.
 
 mono_d = float(taz.find("./reso/mono_d").text)
 mono_w = float(taz.find("./reso/pop_mono_w").text)
@@ -105,11 +111,24 @@ mono_h = float(taz.find("./reso/pop_mono_h").text)
 mono_t = float(taz.find("./reso/pop_mono_thick").text)
 mono_mosaic = float(taz.find("./reso/mono_mosaic").text)
 mono_geo_factor = 12.
-mono_sense = int(taz.find("./reso/mono_scatter_sense").text)
-if mono_sense == 1:
+mono_sense = -1.
+if int(taz.find("./reso/mono_scatter_sense").text) == 1:
     mono_sense = 1.
-else:
-    mono_sense = -1.
+thetam = tas.get_mono_angle(ki, mono_d, True) * mono_sense
+mono_curv_h_mode = int(taz.find("./reso/pop_mono_use_curvh").text)
+mono_curv_v_mode = int(taz.find("./reso/pop_mono_use_curvv").text)
+if mono_curv_h_mode == 0:
+    mono_curv_h = 9999.
+elif mono_curv_h_mode == 1:
+    mono_curv_h = helpers.foc_curv(dist_src_mono, dist_mono_sample, np.abs(2.*thetam), False)
+elif mono_curv_h_mode == 2:
+    mono_curv_h = float(taz.find("./reso/pop_mono_curvh").text)
+if mono_curv_v_mode == 0:
+    mono_curv_v = 9999.
+elif mono_curv_v_mode == 1:
+    mono_curv_v = helpers.foc_curv(dist_src_mono, dist_mono_sample, np.abs(2.*thetam), True)
+elif mono_curv_v_mode == 2:
+    mono_curv_v = float(taz.find("./reso/pop_mono_curvv").text)
 
 ana_d = float(taz.find("./reso/ana_d").text)
 ana_w = float(taz.find("./reso/pop_ana_w").text)
@@ -117,33 +136,36 @@ ana_h = float(taz.find("./reso/pop_ana_h").text)
 ana_t = float(taz.find("./reso/pop_ana_thick").text)
 ana_mosaic = float(taz.find("./reso/ana_mosaic").text)
 ana_geo_factor = 12.
-ana_sense = float(taz.find("./reso/ana_scatter_sense").text)
-if ana_sense == 1:
+ana_sense = -1.
+if int(taz.find("./reso/ana_scatter_sense").text) == 1:
     ana_sense = 1.
-else:
-    ana_sense = -1.
+thetaa = tas.get_mono_angle(kf, ana_d, True) * ana_sense
+ana_curv_h_mode = int(taz.find("./reso/pop_ana_use_curvh").text)
+ana_curv_v_mode = int(taz.find("./reso/pop_ana_use_curvv").text)
+if ana_curv_h_mode == 0:
+    ana_curv_h = 9999.
+elif ana_curv_h_mode == 1:
+    ana_curv_h = helpers.foc_curv(dist_sample_ana, dist_ana_det, np.abs(2.*thetaa), False)
+elif ana_curv_h_mode == 2:
+    ana_curv_h = float(taz.find("./reso/pop_ana_curvh").text)
+if ana_curv_v_mode == 0:
+    ana_curv_v = 9999.
+elif ana_curv_v_mode == 1:
+    ana_curv_v = helpers.foc_curv(dist_sample_ana, dist_ana_det, np.abs(2.*thetaa), True)
+elif ana_curv_v_mode == 2:
+    ana_curv_v = float(taz.find("./reso/pop_ana_curvv").text)
 
 det_w = float(taz.find("./reso/pop_det_w").text)
 det_h = float(taz.find("./reso/pop_det_h").text)
-det_geo = int(taz.find("./reso/pop_det_rect").text)
-if det_geo > 0:
+det_geo_factor = 16.
+if int(taz.find("./reso/pop_det_rect").text) > 0:
     det_geo_factor = 12.
-else:
-    det_geo_factor = 16.
 
 monitor_w = float(taz.find("./reso/pop_monitor_w").text)
 monitor_h = float(taz.find("./reso/pop_monitor_h").text)
-monitor_geo = int(taz.find("./reso/pop_monitor_rect").text)
-if monitor_geo > 0:
+monitor_geo_factor = 16.
+if int(taz.find("./reso/pop_monitor_rect").text) > 0:
     monitor_geo_factor = 12.
-else:
-    monitor_geo_factor = 16.
-
-dist_src_mono = float(taz.find("./reso/pop_dist_src_mono").text)
-dist_mono_sample = float(taz.find("./reso/pop_dist_mono_sample").text)
-dist_mono_monitor = float(taz.find("./reso/pop_dist_mono_monitor").text)
-dist_sample_ana = float(taz.find("./reso/pop_dist_sample_ana").text)
-dist_ana_det = float(taz.find("./reso/pop_dist_ana_det").text)
 
 coll_h_mono = float(taz.find("./reso/h_coll_mono").text)
 coll_h_sample1 = float(taz.find("./reso/h_coll_before_sample").text)
@@ -153,12 +175,6 @@ coll_v_mono = float(taz.find("./reso/v_coll_mono").text)
 coll_v_sample1 = float(taz.find("./reso/v_coll_before_sample").text)
 coll_v_sample2 = float(taz.find("./reso/v_coll_after_sample").text)
 coll_v_ana = float(taz.find("./reso/v_coll_ana").text)
-
-ki = float(taz.find("./reso/ki").text)
-kf = float(taz.find("./reso/kf").text)
-Ef = tas.k2_to_E * kf**2.
-E = float(taz.find("./reso/E").text)
-Q = float(taz.find("./reso/Q").text)
 # -----------------------------------------------------------------------------
 
 
@@ -177,13 +193,13 @@ exp = Experiment(
         mono_width = {mono_w}/sqrt({mono_geo_factor}),
         mono_height = {mono_h}/sqrt({mono_geo_factor}),
         mono_depth = {mono_t}/sqrt({mono_geo_factor}),
-        mono_rh = 9999, mono_rv = 9999,
+        mono_rh = {mono_curv_h}, mono_rv = {mono_curv_v},
 
         analyzer = Analyzer(tau = 2*pi/{ana_d}, mosaic = {ana_mosaic}),
         ana_width = {ana_w}/sqrt({ana_geo_factor}),
         ana_height = {ana_h}/sqrt({ana_geo_factor}),
         ana_depth = {ana_t}/sqrt({ana_geo_factor}),
-        ana_rh = 9999, ana_rv = 9999,
+        ana_rh = {ana_curv_h}, ana_rv = {ana_curv_v},
 
         beam = (;
             width = {src_w}/sqrt({src_geo_factor}),
@@ -200,6 +216,7 @@ exp = Experiment(
 
         hcol = ({coll_h_mono}, {coll_h_sample1}, {coll_h_sample2}, {coll_h_ana}),
         vcol = ({coll_v_mono}, {coll_v_sample1}, {coll_v_sample2}, {coll_v_ana}),
+        #guide = nothing,
 
         arms = ({dist_src_mono}, {dist_mono_sample}, {dist_sample_ana}, {dist_ana_det}),
 
@@ -247,6 +264,7 @@ print(reslib.format(
     mono_w = mono_w, mono_h = mono_h, mono_t = mono_t,
     mono_d = mono_d, mono_mosaic = mono_mosaic, mono_sense = mono_sense,
     mono_geo_factor = mono_geo_factor,
+    mono_curv_h = mono_curv_h, mono_curv_v = mono_curv_v,
 
     monitor_w = monitor_w, monitor_h = monitor_h,
     monitor_geo_factor = monitor_geo_factor,
@@ -254,6 +272,7 @@ print(reslib.format(
     ana_w = ana_w, ana_h = ana_h, ana_t = ana_t,
     ana_d = ana_d, ana_mosaic = ana_mosaic, ana_sense = ana_sense,
     ana_geo_factor = ana_geo_factor,
+    ana_curv_h = ana_curv_h, ana_curv_v = ana_curv_v,
 
     coll_h_mono = coll_h_mono, coll_h_sample1 = coll_h_sample1,
     coll_h_sample2 = coll_h_sample2, coll_h_ana = coll_h_ana,
