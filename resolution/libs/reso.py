@@ -167,6 +167,10 @@ def calc_incoh_fwhms(reso):
 #
 def descr_ellipse(quadric):
     [ evals, evecs ] = la.eig(quadric)
+    if np.iscomplexobj(evals):
+        evals = evals.real
+    if np.iscomplexobj(evecs):
+        evecs = evecs.real
 
     fwhms = 1./np.sqrt(np.abs(evals)) * helpers.sig2fwhm
 
