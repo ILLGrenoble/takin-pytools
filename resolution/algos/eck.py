@@ -385,12 +385,18 @@ def calc(param):
     W -= (0.5*V1[5])**2. / U1[5, 5] + (0.5*V2[4])**2. / U2[4, 4]
 
     R0 = dReflM*dReflA * np.pi * np.sqrt(1. / np.abs(U1[5, 5] * U2[4, 4]))
+    R0 /= np.abs(la.det(T))
+
+    R0 /= 2.*np.pi/helpers.sig2fwhm * (param["mono_mosaic"] * param["mono_mosaic_v"])
+    R0 /= 2.*np.pi/helpers.sig2fwhm * (param["ana_mosaic"] * param["ana_mosaic_v"])
     # --------------------------------------------------------------------------
 
 
     # --------------------------------------------------------------------------
     # include sample mosaic, see cn.cpp
     # --------------------------------------------------------------------
+    U_beforemosaic = U
+
     # add horizontal sample mosaic
     mos_Q_sq = (param["sample_mosaic"] * Q)**2.
     vec1 = U[:, 1] / helpers.sig2fwhm**2.
@@ -402,6 +408,8 @@ def calc(param):
     vec2 = U[:, 2] / helpers.sig2fwhm**2.
     U -= helpers.sig2fwhm**2. * np.outer(vec2, vec2) / \
         (1./mos_v_Q_sq + U[2,2]/helpers.sig2fwhm**2.)
+
+    R0 *= np.sqrt(np.abs(la.det(U)/la.det(U_beforemosaic)))
     # --------------------------------------------------------------------------
 
 
@@ -424,7 +432,7 @@ def calc(param):
 
     # missing volume prefactor to normalise gaussian,
     # cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
-    R0 *= res_vol * np.pi * 3.
+    R0 *= res_vol * 8.
     R0 *= np.exp(-W)
     R0 *= dxsec
 

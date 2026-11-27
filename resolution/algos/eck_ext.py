@@ -387,12 +387,18 @@ def calc(param):
 
     # C_all,0 in [end25], equ. 1.1, 2.1
     R0 = dReflM*dReflA * np.pi * np.sqrt(1. / np.abs(U1[5, 5] * U2[4, 4]))
+    R0 /= np.abs(la.det(T))
+
+    R0 /= 2.*np.pi/helpers.sig2fwhm * (param["mono_mosaic"] * param["mono_mosaic_v"])
+    R0 /= 2.*np.pi/helpers.sig2fwhm * (param["ana_mosaic"] * param["ana_mosaic_v"])
     # --------------------------------------------------------------------------
 
 
     # --------------------------------------------------------------------------
     # include sample mosaic, see also cn.cpp
     # --------------------------------------------------------------------------
+    U_beforemosaic = U
+
     mos_Q_sq = (param["sample_mosaic"] * Q)**2.
     mos_v_Q_sq = (param["sample_mosaic_v"] * Q)**2.
 
@@ -404,7 +410,7 @@ def calc(param):
 
     # equ. 4.4 in [end25]
     R0 *= np.pi / np.sqrt(la.det(mosaic))
-    R0 *= helpers.sig2fwhm*helpers.sig2fwhm / (2.*np.pi * np.sqrt(mos_Q_sq * mos_v_Q_sq))
+    R0 /= 2.*np.pi * np.sqrt(mos_Q_sq * mos_v_Q_sq)
 
     # equ. 4.5-4.7 in [end25]
     P12 = matP[1:3, :]
@@ -414,6 +420,8 @@ def calc(param):
     matK -= 0.25 * P12invM @ P12
     matP -= U12invM @ P12
     U -= U12invM @ U12
+
+    R0 *= np.sqrt(np.abs(la.det(U)/la.det(U_beforemosaic)))
     # --------------------------------------------------------------------------
 
 
@@ -538,7 +546,7 @@ def calc(param):
     else:
         raise ValueError("ResPy: No valid sample shape given.")
 
-    #R0 /= V_sample**2.
+    R0 /= V_sample
     # --------------------------------------------------------------------------
 
 
@@ -560,11 +568,11 @@ def calc(param):
 
 
     # prefactor and volume
-    res_vol = reso.ellipsoid_volume(R)
+    res_vol = reso.ellipsoid_volume(2.*R)
 
     # missing volume prefactor to normalise gaussian,
     # cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
-    R0 *= res_vol * np.pi * 3.
+    R0 *= res_vol * 8.
     R0 *= np.exp(-res["reso_s"])
     R0 *= dxsec
 

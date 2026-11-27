@@ -463,6 +463,8 @@ def calc(param, pointlike = False):
         DSinv = la.inv(DS) + G
         R0 *= np.sqrt(la.det(S)*la.det(F) / (la.det(K)*la.det(DSinv)))
 
+    R0 /= helpers.sig2fwhm**4.
+
     res["reso"] = R
     res["reso_v"] = np.array([0., 0., 0., 0.])
     res["reso_s"] = 0.
